@@ -7,6 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class LocalizadorMotos {
 
     public static void main(String[] args) {
-        SpringApplication.run(LocalizadorMotosApplication.class, args);
+        SpringApplication.run(LocalizadorMotos.class, args);
     }
 }
