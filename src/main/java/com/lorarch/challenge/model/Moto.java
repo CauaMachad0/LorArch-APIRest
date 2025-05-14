@@ -12,10 +12,10 @@ public class Moto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String modelo;
-
     private String placa;
+    private String descricao;
+    private String setor;
 
     @Enumerated(EnumType.STRING)
     private StatusMoto status;
@@ -74,6 +74,22 @@ public class Moto {
 
     public void setOcorrencias(List<Ocorrencia> ocorrencias) {
         this.ocorrencias = ocorrencias;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getSetor() {
+        return setor;
+    }
+
+    public void setSetor(String setor) {
+        this.setor = setor;
     }
 
     private String cor;

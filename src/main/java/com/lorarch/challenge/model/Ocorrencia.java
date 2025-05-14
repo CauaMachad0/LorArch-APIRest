@@ -10,7 +10,8 @@ public class Ocorrencia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    private String tipo;
+    private LocalDate data;
     private String descricao;
 
     public Long getId() {
@@ -43,6 +44,22 @@ public class Ocorrencia {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public void setData(LocalDate data) {
+        this.data = data;
     }
 
     private LocalDate dataRegistro;
