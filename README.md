@@ -36,13 +36,13 @@ Cada moto possui um identificador (LoRa ou RFID), permitindo sua rastreabilidade
   - Manutenções
   - Movimentações
 - **Camadas:**
-    src/
-    ├── controller/ # Endpoints da API
-    ├── service/ # Regras de negócio
-    ├── repository/ # Repositórios (Spring Data JPA)
-    ├── model/ # Entidades (JPA)
-    ├── dto/ # Objetos de transferência de dados
-    └── application.properties # Configurações
+    -src/
+    -├── controller/ # Endpoints da API
+    -├── service/ # Regras de negócio
+    -├── repository/ # Repositórios (Spring Data JPA)
+    -├── model/ # Entidades (JPA)
+    -├── dto/ # Objetos de transferência de dados
+    -└── application.properties # Configurações
   
 
 ### 💻 Módulo em C#
