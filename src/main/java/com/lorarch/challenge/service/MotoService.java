@@ -19,7 +19,7 @@ public class MotoService {
     public Moto criarMoto(MotoDTO dto) {
         Moto moto = new Moto();
         moto.setPlaca(dto.getPlaca());
-        moto.setStatus(dto.getStatus());
+        moto.setStatus(convertToStatusEnum(dto.getStatus()));
         moto.setSetor(dto.getSetor());
         return motoRepository.save(moto);
     }
@@ -33,14 +33,10 @@ public class MotoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Moto não encontrada com ID: " + id));
     }
 
-    public Moto salvar(Moto moto) {
-        return motoRepository.save(moto);
-    }
-
-    public Moto atualizar(Long id, Moto motoAtualizada) {
+    public Moto atualizar(Long id, MotoDTO dto) {
         Moto moto = buscarPorId(id);
-        moto.setStatus(motoAtualizada.getStatus());
-        moto.setDescricao(motoAtualizada.getDescricao());
+        moto.setStatus(StatusMoto.valueOf(dto.getStatus().toUpperCase()));
+        moto.setSetor(dto.getSetor());
         return motoRepository.save(moto);
     }
 
@@ -49,8 +45,11 @@ public class MotoService {
         motoRepository.delete(moto);
     }
 
-    private MotoDTO dto;
-    StatusMoto statusEnum = StatusMoto.valueOf(dto.getStatus().toUpperCase());
-
+    private StatusMoto convertToStatusEnum(String status) {
+        try {
+            return StatusMoto.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Status inválido: " + status);
+        }
+    }
 }
-

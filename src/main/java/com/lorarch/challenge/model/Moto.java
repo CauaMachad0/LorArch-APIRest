@@ -1,9 +1,7 @@
 package com.lorarch.challenge.model;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -12,13 +10,34 @@ public class Moto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String modelo;
+
+    @Column(unique = true, nullable = false)
     private String placa;
-    private String descricao;
-    private String setor;
+
+    private String modelo;
 
     @Enumerated(EnumType.STRING)
     private StatusMoto status;
+
+    @Column(nullable = false)
+    private String setor;
+
+    private LocalDateTime dataCadastro;
+    private LocalDateTime dataAtualizacao;
+
+    @OneToMany(mappedBy = "moto", cascade = CascadeType.ALL)
+    private List<Ocorrencia> ocorrencias;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dataCadastro = LocalDateTime.now();
+        this.dataAtualizacao = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.dataAtualizacao = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
@@ -26,6 +45,30 @@ public class Moto {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public List<Ocorrencia> getOcorrencias() {
+        return ocorrencias;
+    }
+
+    public void setOcorrencias(List<Ocorrencia> ocorrencias) {
+        this.ocorrencias = ocorrencias;
+    }
+
+    public LocalDateTime getDataAtualizacao() {
+        return dataAtualizacao;
+    }
+
+    public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
+        this.dataAtualizacao = dataAtualizacao;
+    }
+
+    public LocalDateTime getDataCadastro() {
+        return dataCadastro;
+    }
+
+    public void setDataCadastro(LocalDateTime dataCadastro) {
+        this.dataCadastro = dataCadastro;
     }
 
     public String getModelo() {
@@ -52,38 +95,6 @@ public class Moto {
         this.status = status;
     }
 
-    public String getCor() {
-        return cor;
-    }
-
-    public void setCor(String cor) {
-        this.cor = cor;
-    }
-
-    public LocalDate getDataEntrada() {
-        return dataEntrada;
-    }
-
-    public void setDataEntrada(LocalDate dataEntrada) {
-        this.dataEntrada = dataEntrada;
-    }
-
-    public List<Ocorrencia> getOcorrencias() {
-        return ocorrencias;
-    }
-
-    public void setOcorrencias(List<Ocorrencia> ocorrencias) {
-        this.ocorrencias = ocorrencias;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
     public String getSetor() {
         return setor;
     }
@@ -91,12 +102,4 @@ public class Moto {
     public void setSetor(String setor) {
         this.setor = setor;
     }
-
-    private String cor;
-
-    private LocalDate dataEntrada;
-
-    @OneToMany(mappedBy = "moto", cascade = CascadeType.ALL)
-    private List<Ocorrencia> ocorrencias = new ArrayList<>();
 }
-
