@@ -65,13 +65,12 @@ Cada moto possui um identificador (LoRa ou RFID), permitindo sua rastreabilidade
 
 - Java 17+  
 - Oracle  
-- Docker  
 - Git  
 
 ### Passos
 
 # Clone o repositório
-git clone https://github.com/seuusuario/smartmoto.git
+git clone [https://github.com/seuusuario/smartmoto.git](https://github.com/CauaMachad0/LorArch.git)
 
 # Rode o backend com Maven ou Gradle
 ./mvnw spring-boot:run
