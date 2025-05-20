@@ -1,5 +1,6 @@
 package com.lorarch.challenge.controller;
 
+import com.lorarch.challenge.assembler.MotoModelAssembler;
 import com.lorarch.challenge.dto.MotoDTO;
 import com.lorarch.challenge.model.Moto;
 import com.lorarch.challenge.service.MotoService;
@@ -16,6 +17,9 @@ public class MotoController {
 
     @Autowired
     private MotoService motoService;
+    @Autowired
+    private MotoModelAssembler assembler;
+
 
     @PostMapping
     public ResponseEntity<Moto> criarMoto(@Valid @RequestBody MotoDTO dto) {
