@@ -34,13 +34,27 @@ public class Moto {
         this.dataAtualizacao = LocalDateTime.now();
     }
 
-    @PreUpdate
+    public Moto() {
+    }
+
+        @PreUpdate
     protected void onUpdate() {
         this.dataAtualizacao = LocalDateTime.now();
     }
 
     public Long getId() {
         return id;
+    }
+
+    public Moto(Long id, String placa, String modelo, StatusMoto status, String setor, LocalDateTime dataCadastro, LocalDateTime dataAtualizacao, List<Ocorrencia> ocorrencias) {
+        this.id = id;
+        this.placa = placa;
+        this.modelo = modelo;
+        this.status = status;
+        this.setor = setor;
+        this.dataCadastro = dataCadastro;
+        this.dataAtualizacao = dataAtualizacao;
+        this.ocorrencias = ocorrencias;
     }
 
     public void setId(Long id) {

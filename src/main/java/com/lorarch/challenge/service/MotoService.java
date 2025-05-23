@@ -5,7 +5,9 @@ import com.lorarch.challenge.exception.ResourceNotFoundException;
 import com.lorarch.challenge.model.Moto;
 import com.lorarch.challenge.model.StatusMoto;
 import com.lorarch.challenge.repository.MotoRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,11 +18,19 @@ public class MotoService {
     @Autowired
     private MotoRepository motoRepository;
 
+    @Transactional
     public Moto criarMoto(MotoDTO dto) {
+        validarCampos(dto);
+
+        if (motoRepository.findByPlaca(dto.getPlaca()).isPresent()) {
+            throw new DataIntegrityViolationException("Já existe uma moto com a placa: " + dto.getPlaca());
+        }
+
         Moto moto = new Moto();
         moto.setPlaca(dto.getPlaca());
-        moto.setStatus(convertToStatusEnum(dto.getStatus()));
+        moto.setStatus(converterStatus(dto.getStatus()));
         moto.setSetor(dto.getSetor());
+
         return motoRepository.save(moto);
     }
 
@@ -33,23 +43,40 @@ public class MotoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Moto não encontrada com ID: " + id));
     }
 
+    @Transactional
     public Moto atualizar(Long id, MotoDTO dto) {
+        validarCampos(dto);
+
         Moto moto = buscarPorId(id);
-        moto.setStatus(StatusMoto.valueOf(dto.getStatus().toUpperCase()));
+        moto.setStatus(converterStatus(dto.getStatus()));
         moto.setSetor(dto.getSetor());
+
         return motoRepository.save(moto);
     }
 
+    @Transactional
     public void deletar(Long id) {
         Moto moto = buscarPorId(id);
         motoRepository.delete(moto);
     }
 
-    private StatusMoto convertToStatusEnum(String status) {
+    private StatusMoto converterStatus(String status) {
         try {
             return StatusMoto.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Status inválido: " + status);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new IllegalArgumentException("Status inválido: " + status + ". Os valores válidos são: " + List.of(StatusMoto.values()));
+        }
+    }
+
+    private void validarCampos(MotoDTO dto) {
+        if (dto.getPlaca() == null || dto.getPlaca().isBlank()) {
+            throw new IllegalArgumentException("A placa não pode ser vazia.");
+        }
+        if (dto.getStatus() == null || dto.getStatus().isBlank()) {
+            throw new IllegalArgumentException("O status não pode ser vazio.");
+        }
+        if (dto.getSetor() == null || dto.getSetor().isBlank()) {
+            throw new IllegalArgumentException("O setor não pode ser vazio.");
         }
     }
 }
