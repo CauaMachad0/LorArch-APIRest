@@ -4,11 +4,12 @@ import com.lorarch.challenge.dto.OcorrenciaDTO;
 import com.lorarch.challenge.model.Ocorrencia;
 import com.lorarch.challenge.service.OcorrenciaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/ocorrencias")
@@ -17,9 +18,15 @@ public class OcorrenciaController {
     @Autowired
     private OcorrenciaService ocorrenciaService;
 
+    @GetMapping("/paginado")
+    public ResponseEntity<Page<Ocorrencia>> listarPaginado(
+            @PageableDefault(size = 5, sort = "data") Pageable pageable) {
+        return ResponseEntity.ok(ocorrenciaService.listarPaginado(pageable));
+    }
+
     @GetMapping
-    public List<Ocorrencia> listarTodas() {
-        return ocorrenciaService.listarTodas();
+    public ResponseEntity<?> listarTodas() {
+        return ResponseEntity.ok(ocorrenciaService.listarTodas());
     }
 
     @GetMapping("/{id}")
