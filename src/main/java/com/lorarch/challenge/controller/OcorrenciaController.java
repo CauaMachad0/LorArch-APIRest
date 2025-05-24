@@ -33,6 +33,12 @@ public class OcorrenciaController {
         return new ResponseEntity<>(ocorrencia, HttpStatus.CREATED);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Ocorrencia> atualizar(@PathVariable Long id, @RequestBody OcorrenciaDTO dto) {
+        Ocorrencia ocorrenciaAtualizada = ocorrenciaService.atualizarOcorrencia(id, dto);
+        return ResponseEntity.ok(ocorrenciaAtualizada);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         ocorrenciaService.deletar(id);

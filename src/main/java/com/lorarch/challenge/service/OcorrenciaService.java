@@ -48,6 +48,23 @@ public class OcorrenciaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Ocorrência não encontrada com ID: " + id));
     }
 
+    @CachePut(key = "#id")
+    @Caching(evict = {
+            @CacheEvict(key = "'all'")
+    })
+    public Ocorrencia atualizarOcorrencia(Long id, OcorrenciaDTO dto) {
+        Ocorrencia ocorrenciaExistente = buscarPorId(id);
+
+        Moto moto = motoService.buscarPorId(dto.getMotoId());
+
+        ocorrenciaExistente.setTipo(dto.getTipo());
+        ocorrenciaExistente.setDescricao(dto.getDescricao());
+        ocorrenciaExistente.setData(dto.getData());
+        ocorrenciaExistente.setMoto(moto);
+
+        return ocorrenciaRepository.save(ocorrenciaExistente);
+    }
+
     @CacheEvict(key = "#id")
     @Caching(evict = {
             @CacheEvict(key = "'all'")
