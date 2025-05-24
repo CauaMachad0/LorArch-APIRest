@@ -14,6 +14,7 @@ public class Moto {
     @Column(unique = true, nullable = false)
     private String placa;
 
+    @Column(nullable = false)
     private String modelo;
 
     @Enumerated(EnumType.STRING)
@@ -34,86 +35,44 @@ public class Moto {
         this.dataAtualizacao = LocalDateTime.now();
     }
 
-    public Moto() {
-    }
-
-        @PreUpdate
+    @PreUpdate
     protected void onUpdate() {
         this.dataAtualizacao = LocalDateTime.now();
     }
 
-    public Long getId() {
-        return id;
+    public Moto() {
     }
 
-    public Moto(Long id, String placa, String modelo, StatusMoto status, String setor, LocalDateTime dataCadastro, LocalDateTime dataAtualizacao, List<Ocorrencia> ocorrencias) {
+    public Moto(Long id, String placa, String modelo, StatusMoto status, String setor) {
         this.id = id;
         this.placa = placa;
         this.modelo = modelo;
         this.status = status;
         this.setor = setor;
-        this.dataCadastro = dataCadastro;
-        this.dataAtualizacao = dataAtualizacao;
-        this.ocorrencias = ocorrencias;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public List<Ocorrencia> getOcorrencias() {
-        return ocorrencias;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setOcorrencias(List<Ocorrencia> ocorrencias) {
-        this.ocorrencias = ocorrencias;
-    }
+    public String getPlaca() { return placa; }
+    public void setPlaca(String placa) { this.placa = placa; }
 
-    public LocalDateTime getDataAtualizacao() {
-        return dataAtualizacao;
-    }
+    public String getModelo() { return modelo; }
+    public void setModelo(String modelo) { this.modelo = modelo; }
 
-    public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
-        this.dataAtualizacao = dataAtualizacao;
-    }
+    public StatusMoto getStatus() { return status; }
+    public void setStatus(StatusMoto status) { this.status = status; }
 
-    public LocalDateTime getDataCadastro() {
-        return dataCadastro;
-    }
+    public String getSetor() { return setor; }
+    public void setSetor(String setor) { this.setor = setor; }
 
-    public void setDataCadastro(LocalDateTime dataCadastro) {
-        this.dataCadastro = dataCadastro;
-    }
+    public LocalDateTime getDataCadastro() { return dataCadastro; }
+    public void setDataCadastro(LocalDateTime dataCadastro) { this.dataCadastro = dataCadastro; }
 
-    public String getModelo() {
-        return modelo;
-    }
+    public LocalDateTime getDataAtualizacao() { return dataAtualizacao; }
+    public void setDataAtualizacao(LocalDateTime dataAtualizacao) { this.dataAtualizacao = dataAtualizacao; }
 
-    public void setModelo(String modelo) {
-        this.modelo = modelo;
-    }
-
-    public String getPlaca() {
-        return placa;
-    }
-
-    public void setPlaca(String placa) {
-        this.placa = placa;
-    }
-
-    public StatusMoto getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusMoto status) {
-        this.status = status;
-    }
-
-    public String getSetor() {
-        return setor;
-    }
-
-    public void setSetor(String setor) {
-        this.setor = setor;
-    }
+    public List<Ocorrencia> getOcorrencias() { return ocorrencias; }
+    public void setOcorrencias(List<Ocorrencia> ocorrencias) { this.ocorrencias = ocorrencias; }
 }

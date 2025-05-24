@@ -1,10 +1,10 @@
 package com.lorarch.challenge.model;
 
 public enum StatusMoto {
+    NOVA,
     DISPONIVEL,
     EM_USO,
-    MANUTENCAO,
     DANIFICADA,
-    ROUBADA,
+    EM_MANUTENCAO,
     FALTANDO
 }
