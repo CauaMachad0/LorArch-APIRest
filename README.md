@@ -31,8 +31,8 @@ O projeto segue uma arquitetura em **camadas**, utilizando boas práticas como:
 
 ## 🛠️ Tecnologias e Ferramentas
 
-- **Java 17**
-- **Spring Boot 3**
+- **Java 21**
+- **Spring Boot **
 - **Spring Web**
 - **Spring Data JPA**
 - **Spring Cache (Cache de consultas)**
