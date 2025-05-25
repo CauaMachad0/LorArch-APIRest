@@ -55,7 +55,7 @@ Acesse o console H2 em: http://localhost:8080/h2-console
 
 ### ✅ Pré-requisitos
 
-- Java 17 instalado
+- Java instalado
 - Gradle instalado ou usar uma IDE como IntelliJ, VSCode ou Eclipse com suporte a Gradle
 
 ### 🚀 Passo a passo para rodar:
