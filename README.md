@@ -84,12 +84,12 @@ http://localhost:8080
 */
 
 ### Exemplo de JSON para cadastro de moto:
-{
-  "placa": "ABC1234",
-  "modelo": "Honda Biz 125",
-  "status": "DISPONIVEL",
-  "setor": "Galpao Central"
-}
+- {
+  - "placa": "ABC1234",
+  - "modelo": "Honda Biz 125",
+  - "status": "DISPONIVEL",
+  - "setor": "Galpao Central"
+- }
 
 ---
 
