@@ -61,10 +61,10 @@ Acesse o console H2 em: http://localhost:8080/h2-console
 ### 🚀 Passo a passo para rodar:
 
 1. Clone o repositório:
-git clone https://github.com/seu-usuario/seu-repositorio.git
+git clone https://github.com/CauaMachad0/LorArch.git
 
 2. Acesse a pasta do projeto:
-cd seu-repositorio
+cd LorArch
 
 3. Execute a aplicação
 
