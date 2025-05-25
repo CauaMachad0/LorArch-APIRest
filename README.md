@@ -91,6 +91,7 @@ http://localhost:8080
   "setor": "Galpao Central"
 }
 
+---
 
 ### 🔗 /ocorrencias (Gestão de Ocorrências)
 
@@ -111,6 +112,8 @@ http://localhost:8080
   "motoId": 1
 }
 
+---
+
 ### Status da Moto (Enum)
 
 Os status possíveis para as motos são:
@@ -121,6 +124,8 @@ Os status possíveis para as motos são:
 - **DANIFICADA**
 - **FALTANDO**
 - **NOVA**
+
+---
 
 ## Testando com Postman
 
@@ -133,9 +138,13 @@ http://localhost:8080/{endpoint}
 4. Se for POST ou PUT, selecione a aba Body, escolha raw → JSON, e insira o JSON de exemplo.
 5. Clique em Send para enviar a requisição e visualizar a resposta.
 
+---
+
 ### 💾 Cache Implementado
 - A listagem de motos (/motos) e ocorrências (/ocorrencias) possui cache para melhorar performance.
 - Sempre que uma moto ou ocorrência é criada, atualizada ou deletada, o cache é automaticamente atualizado.
+
+---
 
 ### 🧠 Melhorias Futuras
 - Implementar autenticação e autorização com Spring Security.
@@ -144,8 +153,12 @@ http://localhost:8080/{endpoint}
 - Integração com banco de dados externo (MySQL, PostgreSQL, Oracle).
 - Dashboard para visualização dos dados em frontend React ou Angular.
 
+---
+
 ## 👨‍💻 Autor
 ### Feito com 💙 por Cauã Marcelo Machado
 ### Colaboradores: Gabriel Lima e Marcos Ramalho
+
+---
 
 ### ⭐ Se te ajudou, deixa uma estrela ⭐ no repositório!
