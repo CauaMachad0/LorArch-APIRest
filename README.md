@@ -105,12 +105,12 @@ http://localhost:8080
  */
 
 ### Exemplo de JSON para cadastro de ocorrência:
-{
-  "tipo": "DANO",
-  "descricao": "Risco na lateral esquerda",
-  "data": "2024-05-20",
-  "motoId": 1
-}
+- {
+  - "tipo": "DANO",
+  - "descricao": "Risco na lateral esquerda",
+  - "data": "2024-05-20",
+  - "motoId": 1
+- }
 
 ---
 
