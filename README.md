@@ -1,164 +1,152 @@
-# LorArch – API REST com Spring Boot
+# LorArch – Aplicação Web & API REST com Spring Boot
 
 ## 📑 Descrição do Projeto
-
-O **LorArch** é uma API REST desenvolvida com **Spring Boot** que tem como objetivo **gerenciar o fluxo operacional de motos dentro de um galpão**. Essa API permite acompanhar o status das motos, registrar ocorrências (como manutenções, danos ou atualizações de uso) e manter um histórico organizado e acessível dessas informações.
-
-O projeto simula uma operação comum em empresas que trabalham com locação, entrega ou manutenção de motos, como galpões de logística ou serviços de aluguel.
+O **LorArch** é uma aplicação web com **Spring Boot** que permite **gerenciar o fluxo operacional de motos em um galpão**.  
+Além da API REST, agora possui **interface web com Thymeleaf**, autenticação com **Spring Security** e versionamento de banco via **Flyway**.
 
 ---
 
 ## 🎯 Objetivos
 
-- 📋 Organizar e registrar a entrada e saída de motos.
-- 🔍 Permitir rastrear o status de cada moto (disponível, em manutenção, danificada, etc.).
-- 🛠️ Registrar ocorrências específicas associadas a uma moto (ex.: manutenção, problemas ou uso).
-- 🗃️ Fornecer uma API REST robusta para integração com outros sistemas, apps mobile ou dashboards.
+- 📋 Organizar e registrar a entrada e saída de motos.  
+- 🔍 Rastrear o status de cada moto (disponível, em manutenção, danificada, etc.).  
+- 🛠️ Registrar ocorrências associadas a cada moto (ex.: manutenção, problemas ou uso).  
+- 🗃️ Fornecer uma API REST robusta e também uma interface web amigável para operadores.
 
 ---
 
-## 🏗️ Arquitetura do Projeto
+## 🏗️ Arquitetura
 
-O projeto segue uma arquitetura em **camadas**, utilizando boas práticas como:
-
-- **Controller:** Camada responsável por receber requisições HTTP e enviar respostas.
-- **Service:** Camada onde ficam as regras de negócio e a lógica da aplicação.
-- **Repository:** Camada de persistência de dados (banco de dados).
-- **DTO:** Objetos de transferência de dados entre a API e o cliente.
-- **Model:** Representação das entidades do banco de dados.
-
----
-
-## 🛠️ Tecnologias e Ferramentas
-
-- **Java 21**
-- **Spring Boot **
-- **Spring Web**
-- **Spring Data JPA**
-- **Spring Cache (Cache de consultas)**
-- **H2 Database (Banco de dados em memória para testes)**
-- **Bean Validation (validação dos dados)**
-- **Gradle (Gerenciamento de dependências e build)**
-- **Postman (Testes dos endpoints)**
+O projeto segue arquitetura em **camadas**:
+- **Controller (REST e Web)** – recebe requisições HTTP (API em `/api/**` e páginas web em `/motos/**`).
+- **Service** – regras de negócio e validações.
+- **Repository** – persistência (Spring Data JPA).
+- **DTO** – transferência de dados entre API e cliente.
+- **Model** – entidades JPA.
 
 ---
 
-## ⚙️ Configuração do Banco de Dados (H2)
+## 🛠️ Tecnologias
 
-O projeto utiliza **H2 Database**, um banco de dados em memória que não requer instalação. Ele é ideal para desenvolvimento e testes rápidos.
-
-Acesse o console H2 em: http://localhost:8080/h2-console
+- **Java 21**  
+- **Spring Boot 3.2.x**  
+  - Spring Web (REST + MVC)  
+  - Spring Data JPA  
+  - Spring Security (login, logout e controle de permissões)  
+  - Spring Cache  
+- **Thymeleaf** (páginas HTML com fragmentos)  
+- **Flyway** (migração e versionamento do banco – 4 versões)  
+- **H2 Database** (em memória para dev/teste)  
+- **Bean Validation**  
+- **Gradle**  
+- **Postman** para testes de API
 
 ---
 
-## 🏁 Como executar o projeto
+## ⚙️ Banco de Dados (H2 + Flyway)
 
-### ✅ Pré-requisitos
+- **Console H2:** [http://localhost:8080/h2-console](http://localhost:8080/h2-console)  
+- Credenciais padrão: `jdbc:h2:mem:lorarch`, usuário `sa`, senha em branco.  
+- Migrações automáticas: `src/main/resources/db/migration`  
+  - V1__create_tables.sql  
+  - V2__seed_initial_data.sql  
+  - V3__security_seed_users.sql (cria usuários `admin` e `operador`)  
+  - V4__indexes.sql
 
-- Java instalado
-- Gradle instalado ou usar uma IDE como IntelliJ, VSCode ou Eclipse com suporte a Gradle
+---
 
-### 🚀 Passo a passo para rodar:
+## 🚀 Como Executar
 
-1. Clone o repositório:
+### Pré-requisitos
+- JDK 21+
+- Gradle (ou usar wrapper `./gradlew`)
+
+### Passo a passo
+bash:
 git clone https://github.com/CauaMachad0/LorArch.git
-
-2. Acesse a pasta do projeto:
 cd LorArch
+./gradlew bootRun   # ou gradlew.bat bootRun no Windows
 
-3. Execute a aplicação
+A aplicação web estará em: http://localhost:8080
 
-4. A API estará disponível em:
-http://localhost:8080
+## 🔐 Login e Perfis
 
-## 🌐 Endpoints da API
+- Usuário Admin: admin / admin123 – acesso total (criar/editar/deletar).
+- Usuário Operador: operador / oper123 – pode cadastrar e atualizar, mas não deletar.
 
-### 🔗 /motos (Gestão de Motos)
- * | Método | Endpoint    | Descrição               |
- * | ------ | ----------- | ----------------------- |
- * | POST   | /motos      | Criar uma nova moto     |
- * | GET    | /motos      | Listar todas as motos   |
- * | GET    | /motos/{id} | Buscar moto por ID      |
- * | PUT    | /motos/{id} | Atualizar dados da moto |
- * | DELETE | /motos/{id} | Deletar moto            |
-*/
+## 🌐 Interface Web (Thymeleaf)
+- /login – tela de autenticação.
+- /motos – lista, criação, edição e exclusão de motos.
+- /ocorrencias – gerenciamento de ocorrências.
+  
+- Fluxos Extras:
+  - Enviar moto para manutenção (gera ocorrência e altera status).
+  - Concluir manutenção e devolver ao uso.
 
-### Exemplo de JSON para cadastro de moto:
-- {
-  - "placa": "ABC1234",
-  - "modelo": "Honda Biz 125",
-  - "status": "DISPONIVEL",
-  - "setor": "Galpao Central"
-- }
+## 📡 API REST
 
----
+- Todos os endpoints REST agora estão em /api/**.
+- Endpoints de Motos
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `POST` | `/api/motos` | Cria uma nova moto. |
+| `GET` | `/api/motos` | Lista todas as motos. |
+| `GET` | `/api/motos/{id}` | Busca uma moto específica por ID. |
+| `PUT` | `/api/motos/{id}` | Atualiza os dados de uma moto existente. |
+| `DELETE` | `/api/motos/{id}` | **(ADMIN)** Deleta uma moto do sistema. |
 
-### 🔗 /ocorrencias (Gestão de Ocorrências)
+### Exemplo de JSON para Moto
 
- * | Método | Endpoint          | Descrição               |
- * | ------ | ------------------| ----------------------- |
- * | POST   | /ocorrencias      | Criar uma nova moto     |
- * | GET    | /ocorrencias      | Listar todas as motos   |
- * | GET    | /ocorrencias/{id} | Buscar moto por ID      |
- * | PUT    | /ocorrencias/{id} | Atualizar dados da moto |
- * | DELETE | /ocorrencias/{id} | Deletar moto            |
- */
+json:
+{
+  "placa": "ABC1234",
+  "modelo": "Honda Biz 125",
+  "status": "DISPONIVEL",
+  "setor": "Galpao Central"
+}
 
-### Exemplo de JSON para cadastro de ocorrência:
-- {
-  - "tipo": "DANO",
-  - "descricao": "Risco na lateral esquerda",
-  - "data": "2024-05-20",
-  - "motoId": 1
-- }
+-
+- Endpoints de Ocorrências
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `POST` | `/api/motos` | Cria uma nova ocorrência. |
+| `GET` | `/api/motos` | Lista todas as ocorrências. |
+| `GET` | `/api/motos/{id}` | Busca uma ocorrência específica por ID. |
+| `PUT` | `/api/motos/{id}` | Atualiza os dados de uma ocorrência. |
+| `DELETE` | `/api/motos/{id}` | **(ADMIN)** Deleta uma ocorrência. |
 
----
+### Exemplo de JSON para Moto
 
-### Status da Moto (Enum)
+json:
+{
+  "tipo": "DANO",
+  "descricao": "Risco na lateral esquerda",
+  "data": "2024-05-20",
+  "motoId": 1
+}
 
-Os status possíveis para as motos são:
+## 🧱 Status da Moto (Enum)
 
-- **DISPONIVEL**
-- **EM_USO**
-- **EM_MANUTENCAO**
-- **DANIFICADA**
-- **FALTANDO**
-- **NOVA**
+| Valor | Significado |
+| `NOVA` | Recém-cadastrada |
+| `DISPONIVEL` | Disponível para uso | 
+| `EM_USO` | Em operação |
+| `EM_MANUTENCAO` | Em manutenção/oficina |
+| `DANIFICADA` | Com dano pendente |
+| `FALTANDO` | Ausente/não localizada |
 
----
+## 💾 Cache
 
-## Testando com Postman
+- Listagens de motos e ocorrências usam cache.
+- Criação, edição ou exclusão invalida automaticamente o cache.
 
-### ✅ Passo a passo:
+## 🧩 Melhorias Futuras
 
-1. Abra o Postman.
-2. Crie uma nova configuração
-3. Configure os métodos(GET, POST, PUT, DELETE) e a URL:
-http://localhost:8080/{endpoint}
-4. Se for POST ou PUT, selecione a aba Body, escolha raw → JSON, e insira o JSON de exemplo.
-5. Clique em Send para enviar a requisição e visualizar a resposta.
+- Deploy em nuvem (AWS, Render, Railway etc.).
+- Dashboard React/Angular para visualização.
+- Integração com bancos externos (PostgreSQL, MySQL…).
 
----
+## 👨‍💻 Autores
 
-### 💾 Cache Implementado
-- A listagem de motos (/motos) e ocorrências (/ocorrencias) possui cache para melhorar performance.
-- Sempre que uma moto ou ocorrência é criada, atualizada ou deletada, o cache é automaticamente atualizado.
-
----
-
-### 🧠 Melhorias Futuras
-- Implementar autenticação e autorização com Spring Security.
-- Deploy na nuvem (Render, AWS, Railway ou Heroku).
-- Documentação da API com Swagger/OpenAPI.
-- Integração com banco de dados externo (MySQL, PostgreSQL, Oracle).
-- Dashboard para visualização dos dados em frontend React ou Angular.
-
----
-
-## 👨‍💻 Autor
-### Feito com 💙 por Cauã Marcelo Machado
-### Colaboradores: Gabriel Lima e Marcos Ramalho
-
----
-
-### ⭐ Se te ajudou, deixa uma estrela ⭐ no repositório!
+- Feito com 💙 por Cauã Marcelo Machado
+- Colaboradores: Gabriel Lima e Marcos Ramalho
