@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:insert="${title}">LorArch</title>
+    <meta charset="UTF-8"/>
+</head>
+<body>
+<div th:replace="fragments/_navbar :: *"></div>
+<main>
+    <div th:insert="${content}"></div>
+</main>
+</body>
+</html>
