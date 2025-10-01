@@ -1,25 +1,26 @@
 package com.lorarch.challenge.controller;
 
-
 import com.lorarch.challenge.dto.MotoDTO;
 import com.lorarch.challenge.model.StatusMoto;
 import com.lorarch.challenge.service.MotoService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/motos")
 public class MotoWebController {
 
-    private final MotoService service;
-    public MotoWebController(MotoService service){ this.service = service; }
+    @Autowired
+    private MotoService service;
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("motos", service.listarTodos()); // ou paginado se tiver
+        model.addAttribute("motos", service.listarTodas());
         return "motos/list";
     }
 
@@ -32,45 +33,62 @@ public class MotoWebController {
     }
 
     @PostMapping
-    public String criar(@Valid @ModelAttribute("moto") MotoDTO dto, BindingResult br, Model model) {
+    public String criar(@Valid @ModelAttribute("moto") MotoDTO dto,
+                        BindingResult br, Model model, RedirectAttributes ra) {
         if (br.hasErrors()) {
             model.addAttribute("statuses", StatusMoto.values());
             model.addAttribute("action", "/motos");
             return "motos/form";
         }
-        service.criar(dto);
+        service.criarMoto(dto);
+        ra.addFlashAttribute("success", "Moto criada com sucesso!");
         return "redirect:/motos";
     }
 
     @GetMapping("/{id}/editar")
     public String editar(@PathVariable Long id, Model model) {
-        MotoDTO dto = service.buscarPorId(id);
+        var moto = service.buscarPorId(id);
+        var dto  = new MotoDTO(moto.getPlaca(), moto.getModelo(),
+                moto.getStatus().name(), moto.getSetor());
+
         model.addAttribute("moto", dto);
         model.addAttribute("statuses", StatusMoto.values());
-        model.addAttribute("action", "/motos/"+id);
+        model.addAttribute("action", "/motos/" + id);
         return "motos/form";
     }
 
     @PostMapping("/{id}")
-    public String atualizar(@PathVariable Long id, @Valid @ModelAttribute("moto") MotoDTO dto, BindingResult br, Model model) {
+    public String atualizar(@PathVariable Long id,
+                            @Valid @ModelAttribute("moto") MotoDTO dto,
+                            BindingResult br, Model model, RedirectAttributes ra) {
         if (br.hasErrors()) {
             model.addAttribute("statuses", StatusMoto.values());
-            model.addAttribute("action", "/motos/"+id);
+            model.addAttribute("action", "/motos/" + id);
             return "motos/form";
         }
         service.atualizar(id, dto);
+        ra.addFlashAttribute("success", "Moto atualizada com sucesso!");
         return "redirect:/motos";
     }
 
     @PostMapping("/{id}/excluir")
-    public String excluir(@PathVariable Long id) {
+    public String excluir(@PathVariable Long id, RedirectAttributes ra) {
         service.deletar(id);
+        ra.addFlashAttribute("success", "Moto excluída.");
         return "redirect:/motos";
     }
 
     @PostMapping("/{id}/manutencao")
-    public String enviarParaManutencao(@PathVariable Long id) {
-        service.enviarParaManutencao(id, "Encaminhada para manutenção via painel");
+    public String enviarParaManutencao(@PathVariable Long id, RedirectAttributes ra) {
+        service.enviarParaManutencao(id);   // <-- apenas 1 argumento
+        ra.addFlashAttribute("success", "Encaminhada para manutenção.");
+        return "redirect:/motos";
+    }
+
+    @PostMapping("/{id}/concluir-manutencao")
+    public String concluirManutencao(@PathVariable Long id, RedirectAttributes ra) {
+        service.concluirManutencao(id);
+        ra.addFlashAttribute("success", "Manutenção concluída.");
         return "redirect:/motos";
     }
 }

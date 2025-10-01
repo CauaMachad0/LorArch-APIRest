@@ -3,13 +3,15 @@ package com.lorarch.challenge.controller;
 import com.lorarch.challenge.dto.OcorrenciaDTO;
 import com.lorarch.challenge.model.Ocorrencia;
 import com.lorarch.challenge.service.OcorrenciaService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/ocorrencias")
@@ -35,15 +37,15 @@ public class OcorrenciaController {
     }
 
     @PostMapping
-    public ResponseEntity<Ocorrencia> criar(@RequestBody OcorrenciaDTO dto) {
-        Ocorrencia ocorrencia = ocorrenciaService.criarOcorrencia(dto);
-        return new ResponseEntity<>(ocorrencia, HttpStatus.CREATED);
+    public ResponseEntity<Ocorrencia> criar(@Valid @RequestBody OcorrenciaDTO dto) {
+        Ocorrencia nova = ocorrenciaService.criar(dto);
+        return ResponseEntity.created(URI.create("/api/ocorrencias/" + nova.getId())).body(nova);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Ocorrencia> atualizar(@PathVariable Long id, @RequestBody OcorrenciaDTO dto) {
-        Ocorrencia ocorrenciaAtualizada = ocorrenciaService.atualizarOcorrencia(id, dto);
-        return ResponseEntity.ok(ocorrenciaAtualizada);
+    public ResponseEntity<Ocorrencia> atualizar(@PathVariable Long id,
+                                                @Valid @RequestBody OcorrenciaDTO dto) {
+        return ResponseEntity.ok(ocorrenciaService.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")

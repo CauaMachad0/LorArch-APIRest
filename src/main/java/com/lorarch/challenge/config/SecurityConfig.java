@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -24,14 +24,11 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(DataSource dataSource) {
         JdbcUserDetailsManager mgr = new JdbcUserDetailsManager(dataSource);
-        mgr.setUsersByUsernameQuery(
-                "select username, password, enabled from users where username=?"
-        );
+        mgr.setUsersByUsernameQuery("select username, password, enabled from USERS where username=?");
         mgr.setAuthoritiesByUsernameQuery(
                 "select u.username, r.name as authority " +
-                        "from users u " +
-                        "join user_roles ur on ur.user_id = u.id " +
-                        "join roles r on r.id = ur.role_id " +
+                        "from USERS u join USER_ROLES ur on ur.USER_ID=u.ID " +
+                        "join ROLES r on r.ID=ur.ROLE_ID " +
                         "where u.username=?"
         );
         return mgr;
@@ -41,31 +38,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        // Páginas WEB (Thymeleaf)
-                        .requestMatchers(HttpMethod.GET, "/", "/motos/**", "/ocorrencias/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/", "/motos/**", "/movimentacoes/**").authenticated()
 
-                        // API REST sob /api/**
                         .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN","OPERADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/**").hasAnyRole("ADMIN","OPERADOR")
                         .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
-
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginPage("/login").permitAll()
-                        .defaultSuccessUrl("/", true)
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                );
-
-        // H2 console
-        http.headers(h -> h.frameOptions(f -> f.sameOrigin()));
-        http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
+                .formLogin(form -> form.loginPage("/login").permitAll().defaultSuccessUrl("/", true))
+                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login?logout"))
+                .csrf(Customizer.withDefaults());
 
         return http.build();
     }

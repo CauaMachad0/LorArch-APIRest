@@ -1,56 +1,52 @@
 package com.lorarch.challenge.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.List;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
+@Table(name = "MOTO", schema = "RM554611")
 public class Moto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @NotBlank
+    @Size(max = 10)
+    @Column(name = "PLACA", nullable = false, unique = true, length = 10)
     private String placa;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Size(max = 50)
+    @Column(name = "MODELO", nullable = false, length = 50)
     private String modelo;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", nullable = false, length = 20)
     private StatusMoto status;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Size(max = 50)
+    @Column(name = "SETOR", nullable = false, length = 50)
     private String setor;
 
+    // TIMESTAMP no Oracle ↔ LocalDateTime no Java
+    @CreationTimestamp
+    @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
+
+    @UpdateTimestamp
+    @Column(name = "DATA_ATUALIZACAO", nullable = false)
     private LocalDateTime dataAtualizacao;
 
-    @OneToMany(mappedBy = "moto", cascade = CascadeType.ALL)
-    private List<Ocorrencia> ocorrencias;
-
-    @PrePersist
-    protected void onCreate() {
-        this.dataCadastro = LocalDateTime.now();
-        this.dataAtualizacao = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.dataAtualizacao = LocalDateTime.now();
-    }
-
-    public Moto() {
-    }
-
-    public Moto(Long id, String placa, String modelo, StatusMoto status, String setor) {
-        this.id = id;
-        this.placa = placa;
-        this.modelo = modelo;
-        this.status = status;
-        this.setor = setor;
-    }
-
+    // getters/setters
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -72,7 +68,4 @@ public class Moto {
 
     public LocalDateTime getDataAtualizacao() { return dataAtualizacao; }
     public void setDataAtualizacao(LocalDateTime dataAtualizacao) { this.dataAtualizacao = dataAtualizacao; }
-
-    public List<Ocorrencia> getOcorrencias() { return ocorrencias; }
-    public void setOcorrencias(List<Ocorrencia> ocorrencias) { this.ocorrencias = ocorrencias; }
 }

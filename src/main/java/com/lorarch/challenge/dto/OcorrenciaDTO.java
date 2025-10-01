@@ -1,40 +1,74 @@
 package com.lorarch.challenge.dto;
 
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class OcorrenciaDTO {
-
-    @NotBlank(message = "O tipo de ocorrência é obrigatório.")
-    @Size(min = 3, max = 30, message = "O tipo deve ter entre 3 e 30 caracteres.")
+    @NotBlank
     private String tipo;
 
-    @NotBlank(message = "A descrição é obrigatória.")
-    @Size(min = 5, max = 200, message = "A descrição deve ter entre 5 e 200 caracteres.")
+    @Size(max = 200)
     private String descricao;
 
-    @NotNull(message = "A data é obrigatória.")
-    @FutureOrPresent(message = "A data não pode estar no passado.")
+    @NotNull
     private LocalDate data;
 
-    @NotNull(message = "O ID da moto é obrigatório.")
+    @NotNull @DecimalMin("0.00")
+    private BigDecimal custo;
+
+    @NotNull
     private Long motoId;
 
-    public OcorrenciaDTO() {}
+    @NotNull
+    private Long setorId;
 
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
+    public String getTipo() {
+        return tipo;
+    }
 
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
 
-    public LocalDate getData() { return data; }
-    public void setData(LocalDate data) { this.data = data; }
+    public Long getSetorId() {
+        return setorId;
+    }
 
-    public Long getMotoId() { return motoId; }
-    public void setMotoId(Long motoId) { this.motoId = motoId; }
+    public void setSetorId(Long setorId) {
+        this.setorId = setorId;
+    }
+
+    public Long getMotoId() {
+        return motoId;
+    }
+
+    public void setMotoId(Long motoId) {
+        this.motoId = motoId;
+    }
+
+    public BigDecimal getCusto() {
+        return custo;
+    }
+
+    public void setCusto(BigDecimal custo) {
+        this.custo = custo;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public void setData(LocalDate data) {
+        this.data = data;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
 }
