@@ -1,11 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:with="title='LorArch',content='this :: content' "
-      th:replace="layout :: *">
+<html xmlns:th="http://www.thymeleaf.org" lang="pt">
+<head><meta charset="UTF-8"/><title>Início</title></head>
 <body>
-<div th:fragment="content">
-    <h2>Dashboard</h2>
-    <p>Bem-vindo ao LorArch.</p>
-</div>
+<div th:replace="~{fragments/_navbar :: navbar}"></div>
+<h1>Bem-vindo ao LorArch!!</h1>
 </body>
 </html>

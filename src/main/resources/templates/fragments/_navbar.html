@@ -1,6 +1,11 @@
-<nav xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt">
+<body>
+<div th:fragment="navbar">
     <a th:href="@{/}">Início</a> |
     <a th:href="@{/motos}">Motos</a> |
     <a th:href="@{/ocorrencias}">Ocorrências</a> |
     <a th:href="@{/logout}">Sair</a>
-</nav>
+</div>
+</body>
+</html>

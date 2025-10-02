@@ -111,5 +111,6 @@ public class OcorrenciaService {
         if (tipo == null || !TIPOS_VALIDOS.contains(tipo.trim())) {
             throw new IllegalArgumentException("Tipo inválido. Use: " + String.join(", ", TIPOS_VALIDOS));
         }
+
     }
 }

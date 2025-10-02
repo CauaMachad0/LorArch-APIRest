@@ -10,6 +10,7 @@ import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.sql.DataSource;
 
@@ -38,18 +39,29 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/login", "/css/**", "/js/**", "/images/**",
+                                "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/", "/motos/**", "/movimentacoes/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/", "/motos/**",
+                                "/ocorrencias/**", "/movimentacoes/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN","OPERADOR")
-                        .requestMatchers(HttpMethod.PUT, "/api/**").hasAnyRole("ADMIN","OPERADOR")
-                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,  "/api/**").hasAnyRole("ADMIN","OPERADOR")
+                        .requestMatchers(HttpMethod.DELETE,"/api/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.loginPage("/login").permitAll().defaultSuccessUrl("/", true))
-                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login?logout"))
+                .formLogin(form -> form
+                        .loginPage("/login").permitAll()
+                        .defaultSuccessUrl("/", true)
+                )
+                .logout(logout -> logout
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                        .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+                )
                 .csrf(Customizer.withDefaults());
 
         return http.build();

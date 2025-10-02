@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ocorrências</title>
+</head>
+<body>
+<h1>Ocorrências</h1>
+
+<!-- flash -->
+<div th:if="${success}" th:text="${success}" style="margin:8px 0; color: green;"></div>
+<div th:if="${error}" th:text="${error}" style="margin:8px 0; color: red;"></div>
+
+<p>
+    <a th:href="@{/ocorrencias/novo}">Nova ocorrência</a>
+</p>
+
+<table border="1" cellspacing="0" cellpadding="6">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Data</th>
+        <th>Tipo</th>
+        <th>Moto</th>
+        <th>Setor</th>
+        <th>Custo</th>
+        <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="oc : ${ocorrencias}">
+        <td th:text="${oc.id}">1</td>
+        <td th:text="${#temporals.format(oc.data, 'dd/MM/yyyy')}">01/01/2025</td>
+        <td th:text="${oc.tipo}">Entrada</td>
+        <td th:text="${oc.moto.placa}">ABC1D23</td>
+        <td th:text="${oc.setor.nome}">Operações</td>
+        <td th:text="${#numbers.formatDecimal(oc.custo, 1, 'POINT', 2, 'COMMA')}">0,00</td>
+        <td>
+            <a th:href="@{'/ocorrencias/' + ${oc.id} + '/editar'}">Editar</a>
+
+            <form th:action="@{'/ocorrencias/' + ${oc.id} + '/excluir'}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" onclick="return confirm('Confirma excluir?');">Excluir</button>
+            </form>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(ocorrencias)}">
+        <td colspan="7">Nenhuma ocorrência encontrada.</td>
+    </tr>
+    </tbody>
+</table>
+
+<p><a th:href="@{/}">Voltar</a></p>
+</body>
+</html>

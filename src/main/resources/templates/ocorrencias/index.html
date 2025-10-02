@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt">
+<head><meta charset="UTF-8"/><title>Ocorrências</title></head>
+<body>
+<div th:replace="~{fragments/_navbar :: navbar}"></div>
+
+<h1>Ocorrências</h1>
+<a th:href="@{/ocorrencias/nova}">Nova ocorrência</a>
+
+<table>
+    <thead><tr><th>Moto</th><th>Descrição</th><th>Data</th></tr></thead>
+    <tbody>
+    <tr th:each="o : ${ocorrencias}">
+        <td th:text="${o.motoPlaca}">PLACA</td>
+        <td th:text="${o.descricao}">desc</td>
+        <td th:text="${#temporals.format(o.dataOcorrencia, 'dd/MM/yyyy HH:mm')}">data</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

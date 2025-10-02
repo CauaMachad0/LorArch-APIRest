@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 
 public class MotoDTO {
 
+    private Long id;
+
     @NotBlank(message = "A placa é obrigatória.")
     @Pattern(regexp = "^[A-Z]{3}[0-9][0-9A-Z][0-9]{2}$",
             message = "A placa deve estar no formato válido (ex: ABC1D23 ou ABC1234).")
@@ -23,13 +25,19 @@ public class MotoDTO {
     private String setor;
 
     public MotoDTO() {}
-
-    public MotoDTO(String placa, String modelo, String status, String setor) {
+    public MotoDTO(Long id, String placa, String modelo, String status, String setor) {
+        this.id = id;
         this.placa = placa;
         this.modelo = modelo;
         this.status = status;
         this.setor = setor;
     }
+    public MotoDTO(String placa, String modelo, String status, String setor) {
+        this(null, placa, modelo, status, setor);
+    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getPlaca() { return placa; }
     public void setPlaca(String placa) { this.placa = placa; }
