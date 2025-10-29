@@ -3,16 +3,15 @@ package com.lorarch.challenge.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.JdbcUserDetailsManager;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
-import javax.sql.DataSource;
 
 @Configuration
 public class SecurityConfig {
@@ -23,17 +22,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(DataSource dataSource) {
-        JdbcUserDetailsManager mgr = new JdbcUserDetailsManager(dataSource);
-        mgr.setUsersByUsernameQuery("select username, password, enabled from USERS where username=?");
-        mgr.setAuthoritiesByUsernameQuery(
-                "select u.username, r.name as authority " +
-                        "from USERS u join USER_ROLES ur on ur.USER_ID=u.ID " +
-                        "join ROLES r on r.ID=ur.ROLE_ID " +
-                        "where u.username=?"
+    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+        return new InMemoryUserDetailsManager(
+                User.withUsername("mottu")
+                        .password("{noop}123456")
+                        .roles("ADMIN","OPERADOR")
+                        .build()
         );
-        return mgr;
     }
+    // (depois você volta o JdbcUserDetailsManager)
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -41,19 +38,21 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/css/**", "/js/**", "/images/**",
                                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-
                         .requestMatchers(HttpMethod.GET, "/", "/motos/**",
                                 "/ocorrencias/**", "/movimentacoes/**").authenticated()
-
                         .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN","OPERADOR")
                         .requestMatchers(HttpMethod.PUT,  "/api/**").hasAnyRole("ADMIN","OPERADOR")
                         .requestMatchers(HttpMethod.DELETE,"/api/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/api/**"))
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                )
                 .formLogin(form -> form
                         .loginPage("/login").permitAll()
-                        .defaultSuccessUrl("/", true)
+                        .defaultSuccessUrl("/motos", true)
                 )
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
@@ -61,8 +60,7 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
-                )
-                .csrf(Customizer.withDefaults());
+                );
 
         return http.build();
     }

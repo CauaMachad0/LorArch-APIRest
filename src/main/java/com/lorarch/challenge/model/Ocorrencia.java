@@ -18,7 +18,6 @@ public class Ocorrencia {
     @Column(name = "ID_MOV")
     private Long id;
 
-    //(Entrada, Saida, Manutencao, Diagnostico)
     @NotBlank
     @Size(max = 20)
     @Column(name = "TIPO_MOV", nullable = false, length = 20)

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: template(~{::title}, ~{::main})}">
 <head>
     <meta charset="UTF-8">
     <title>Ocorrências</title>
@@ -7,7 +8,6 @@
 <body>
 <h1>Ocorrências</h1>
 
-<!-- flash -->
 <div th:if="${success}" th:text="${success}" style="margin:8px 0; color: green;"></div>
 <div th:if="${error}" th:text="${error}" style="margin:8px 0; color: red;"></div>
 

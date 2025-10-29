@@ -8,8 +8,8 @@
 <main>
     <h1 th:text="${#strings.contains(action,'/motos/') ? 'Editar moto' : 'Nova moto'}">Nova moto</h1>
 
-    <form th:object="${moto}" th:action="@{${action}}" method="post">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <form th:object="${moto}" th:action="${action}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
         <div>
             <label>Placa</label>
