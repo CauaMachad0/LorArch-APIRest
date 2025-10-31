@@ -1,14 +1,7 @@
 <form th:action="@{/login}" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-    <label>Usuário</label>
-    <input type="text" name="username" required />
-
-    <label>Senha</label>
-    <input type="password" name="password" required />
-
-    <button type="submit">Entrar</button>
-
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <label>Usuário</label><input type="text" name="username" required>
+    <label>Senha</label><input type="password" name="password" required>
+    <button type="submit">Login</button>
     <div th:if="${param.error}">Credenciais inválidas</div>
-    <div th:if="${param.logout}">Você saiu com sucesso.</div>
 </form>

@@ -20,7 +20,7 @@ public class SetorService {
 
     @Cacheable(key = "'all'")
     public List<Setor> listarTodos() {
-        return setorRepository.findAll(Sort.by(Sort.Direction.ASC, "nome")); // <-- ajuste "nome" se o campo tiver outro nome
+        return setorRepository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
     }
 
     @Cacheable(key = "#id")
@@ -33,7 +33,7 @@ public class SetorService {
     @CachePut(key = "#result.id")
     @Caching(evict = { @CacheEvict(key = "'all'") })
     public Setor criar(Setor dados) {
-        if (dados.getNome() != null) dados.setNome(dados.getNome().trim()); // opcional
+        if (dados.getNome() != null) dados.setNome(dados.getNome().trim());
         return setorRepository.save(dados);
     }
 
@@ -42,7 +42,7 @@ public class SetorService {
     @Caching(evict = { @CacheEvict(key = "'all'") })
     public Setor atualizar(Long id, Setor dados) {
         Setor existente = buscarPorId(id);
-        existente.setNome(dados.getNome()); // ajuste outros campos se houver
+        existente.setNome(dados.getNome());
         return setorRepository.save(existente);
     }
 

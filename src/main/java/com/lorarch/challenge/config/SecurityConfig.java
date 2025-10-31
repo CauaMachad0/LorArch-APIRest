@@ -4,14 +4,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+
+import javax.sql.DataSource;
 
 @Configuration
 public class SecurityConfig {
@@ -22,46 +22,48 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        return new InMemoryUserDetailsManager(
-                User.withUsername("mottu")
-                        .password("{noop}123456")
-                        .roles("ADMIN","OPERADOR")
-                        .build()
+    public UserDetailsService userDetailsService(DataSource ds) {
+        JdbcUserDetailsManager mgr = new JdbcUserDetailsManager(ds);
+        mgr.setUsersByUsernameQuery(
+                "SELECT USERNAME, PASSWORD, ENABLED FROM RM554611.APP_USERS WHERE USERNAME=?"
         );
+        mgr.setAuthoritiesByUsernameQuery(
+                "SELECT u.USERNAME, r.NAME AS AUTHORITY " +
+                        "FROM RM554611.APP_USERS u " +
+                        "JOIN RM554611.APP_USER_ROLES ur ON ur.USER_ID=u.ID " +
+                        "JOIN RM554611.APP_ROLES r ON r.ID=ur.ROLE_ID " +
+                        "WHERE u.USERNAME=?");
+        return mgr;
     }
-    // (depois você volta o JdbcUserDetailsManager)
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/js/**", "/images/**",
-                                "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/", "/motos/**",
-                                "/ocorrencias/**", "/movimentacoes/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN","OPERADOR")
-                        .requestMatchers(HttpMethod.PUT,  "/api/**").hasAnyRole("ADMIN","OPERADOR")
-                        .requestMatchers(HttpMethod.DELETE,"/api/**").hasRole("ADMIN")
+                        .requestMatchers("/login","/css/**","/js/**","/images/**",
+                                "/swagger-ui/**","/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/motos/**", "/ocorrencias/**").authenticated()
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(new AntPathRequestMatcher("/api/**"))
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+
+                        .ignoringRequestMatchers("/api/**")
+                        .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
                 )
                 .formLogin(form -> form
                         .loginPage("/login").permitAll()
                         .defaultSuccessUrl("/motos", true)
+                        .failureUrl("/login?error")
                 )
                 .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                        .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
                 );
-
         return http.build();
     }
 }
+
