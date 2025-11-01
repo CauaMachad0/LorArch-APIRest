@@ -7,25 +7,25 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  # nome da aplicação exigido
+ 
   appName: 'myassist554611'
 
-  # nome do ACR que você criou
+ 
   acrName: 'acrmyassist554611'
 
-  # login server do ACR
+ 
   acrLoginServer: 'acrmyassist554611.azurecr.io'
 
-  # repositório da imagem dentro do ACR
+ 
   imageRepository: 'fiap/$(appName)'
 
-  # tag da imagem será o número do build
+  
   imageTag: '$(Build.BuildId)'
 
-  # service connection que você criou
+
   dockerRegistryServiceConnection: 'sc-azure-lorch'
 
-  # caminho do Dockerfile (troca se não estiver na raiz)
+
   dockerfilePath: '**/Dockerfile'
 
 steps:
