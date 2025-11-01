@@ -1,5 +1,4 @@
-# CI do Checkpoint 6 (MyAssist)
-# Builda a imagem Docker e publica no ACR
+
 
 trigger:
   branches:
@@ -11,10 +10,10 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  # nome do app exigido no checkpoint
+  # nome do app exigido pelo checkpoint (myassist + RM)
   appName: 'myassist554611'
 
-  # nome do ACR criado no Azure
+  # nome do ACR no Azure
   acrName: 'acrlorch'
 
   # endereço do ACR
@@ -23,31 +22,36 @@ variables:
   # repositório da imagem dentro do ACR
   imageRepository: 'fiap/$(appName)'
 
-  # tag da imagem = id do build
+  # tag da imagem = número do build
   imageTag: '$(Build.BuildId)'
 
-  # conexão DOCKER (não é ARM)
+  # conexão DOCKER (tipo Docker Registry)
   dockerRegistryServiceConnection: 'sc-acr-lorch'
 
-  # caminho do Dockerfile
-  # se o Dockerfile não estiver na raiz, troca essa linha
-  dockerfilePath: '**/Dockerfile'
+  # caminho do Dockerfile (está na raiz)
+  dockerfilePath: 'Dockerfile'
 
 steps:
+  # 1️ Faz checkout do código
   - checkout: self
 
+  # 2️ Constrói e publica imagem Docker no ACR
   - task: Docker@2
-    displayName: 'Build and push image to ACR'
+    displayName: 'Build and Push image to ACR'
     inputs:
       command: 'buildAndPush'
       containerRegistry: '$(dockerRegistryServiceConnection)'
       repository: '$(imageRepository)'
       dockerfile: '$(dockerfilePath)'
+      buildContext: '$(Build.SourcesDirectory)'
       tags: |
         $(imageTag)
-      buildContext: '$(Build.SourcesDirectory)'
 
+  # 3️ Mostra no log onde a imagem foi publicada
   - script: |
-      echo "Imagem publicada em:"
-      echo "$(acrLoginServer)/$(imageRepository):$(imageTag)"
-    displayName: 'Mostrar imagem publicada'
+      echo "==========================================="
+      echo " IMAGEM PUBLICADA COM SUCESSO "
+      echo "-------------------------------------------"
+      echo " $(acrLoginServer)/$(imageRepository):$(imageTag)"
+      echo "==========================================="
+    displayName: 'Exibir detalhes da publicação'
