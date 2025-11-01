@@ -1,31 +1,36 @@
+# CI do Checkpoint 6 (MyAssist)
+# Builda a imagem Docker e publica no ACR
+
 trigger:
   branches:
     include:
       - main
+      - master
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  # nome da aplicação exigido
+  # nome do app exigido no checkpoint
   appName: 'myassist554611'
 
-  # nome do ACR que você criou
-  acrName: 'acrmyassist554611'
+  # nome do ACR criado no Azure
+  acrName: 'acrlorch'
 
-  # login server do ACR
-  acrLoginServer: 'acrmyassist554611.azurecr.io'
+  # endereço do ACR
+  acrLoginServer: 'acrlorch.azurecr.io'
 
   # repositório da imagem dentro do ACR
   imageRepository: 'fiap/$(appName)'
 
-  # tag da imagem será o número do build
+  # tag da imagem = id do build
   imageTag: '$(Build.BuildId)'
 
-  # service connection que você criou
-  dockerRegistryServiceConnection: 'sc-azure-lorch'
+  # conexão DOCKER (não é ARM)
+  dockerRegistryServiceConnection: 'sc-acr-lorch'
 
-  # caminho do Dockerfile (troca se não estiver na raiz)
+  # caminho do Dockerfile
+  # se o Dockerfile não estiver na raiz, troca essa linha
   dockerfilePath: '**/Dockerfile'
 
 steps:
