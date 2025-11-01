@@ -1,31 +1,33 @@
 # ============================
-# ETAPA 1: build da aplicação
+# ETAPA 1: build da aplicação (com JDK 21)
 # ============================
-FROM eclipse-temurin:17-jdk AS build
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 
-# copia só o que o Gradle precisa primeiro (otimiza cache)
+# copia primeiro os arquivos de build
 COPY gradlew ./
 COPY gradle ./gradle
 COPY build.gradle.kts settings.gradle.kts ./
 
-# baixa as dependências (isso já falha se o projeto estiver quebrado)
+# garante permissão no wrapper
 RUN chmod +x ./gradlew
+
+# baixa dependências básicas e testa o gradle
 RUN ./gradlew --version
 
-# agora copia o restante do código
+# agora copia o código-fonte
 COPY src ./src
 
-# gera o jar SEM testes
+# gera o JAR SEM rodar teste
 RUN ./gradlew clean bootJar -x test --no-daemon
 
 # ============================
-# ETAPA 2: imagem final, leve
+# ETAPA 2: imagem final (JRE 21)
 # ============================
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# copia o jar gerado na etapa de build
+# copia o jar gerado na etapa 1
 COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
