@@ -1,5 +1,3 @@
-
-
 trigger:
   branches:
     include:
@@ -10,48 +8,66 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  # nome do app exigido pelo checkpoint (myassist + RM)
   appName: 'myassist554611'
-
-  # nome do ACR no Azure
   acrName: 'acrlorch'
-
-  # endereço do ACR
   acrLoginServer: 'acrlorch.azurecr.io'
-
-  # repositório da imagem dentro do ACR
   imageRepository: 'fiap/$(appName)'
-
-  # tag da imagem = número do build
   imageTag: '$(Build.BuildId)'
-
-  # conexão DOCKER (tipo Docker Registry)
   dockerRegistryServiceConnection: 'sc-acr-lorch'
+  azureServiceConnection: 'sc-azure-lorch'
+  resourceGroup: 'LorArch'
+  location: 'eastus'
 
-  # caminho do Dockerfile (está na raiz)
-  dockerfilePath: 'Dockerfile'
+stages:
+# =====================================
+# ETAPA 1 - BUILD e PUSH para o ACR
+# =====================================
+- stage: Build
+  displayName: 'Build and Push to ACR'
+  jobs:
+    - job: Build
+      displayName: 'Docker Build and Push'
+      steps:
+        - task: Docker@2
+          displayName: 'Build and Push image to ACR'
+          inputs:
+            containerRegistry: '$(dockerRegistryServiceConnection)'
+            repository: '$(imageRepository)'
+            command: 'buildAndPush'
+            Dockerfile: '**/Dockerfile'
+            tags: |
+              $(imageTag)
 
-steps:
-  # 1️ Faz checkout do código
-  - checkout: self
+# =====================================
+# ETAPA 2 - DEPLOY no ACI (CD)
+# =====================================
+- stage: Deploy
+  displayName: 'Deploy to Azure Container Instance'
+  dependsOn: Build
+  jobs:
+    - job: Deploy
+      displayName: 'Create ACI from ACR image'
+      steps:
+        - task: AzureCLI@2
+          displayName: 'Deploy container to ACI'
+          inputs:
+            azureSubscription: '$(azureServiceConnection)'
+            scriptType: 'bash'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              echo "Deploying container $(appName) to Azure Container Instance..."
 
-  # 2️ Constrói e publica imagem Docker no ACR
-  - task: Docker@2
-    displayName: 'Build and Push image to ACR'
-    inputs:
-      command: 'buildAndPush'
-      containerRegistry: '$(dockerRegistryServiceConnection)'
-      repository: '$(imageRepository)'
-      dockerfile: '$(dockerfilePath)'
-      buildContext: '$(Build.SourcesDirectory)'
-      tags: |
-        $(imageTag)
+              az acr login --name $(acrName)
 
-  # 3️ Mostra no log onde a imagem foi publicada
-  - script: |
-      echo "==========================================="
-      echo " IMAGEM PUBLICADA COM SUCESSO "
-      echo "-------------------------------------------"
-      echo " $(acrLoginServer)/$(imageRepository):$(imageTag)"
-      echo "==========================================="
-    displayName: 'Exibir detalhes da publicação'
+              az container create \
+                --name $(appName) \
+                --resource-group $(resourceGroup) \
+                --image $(acrLoginServer)/$(imageRepository):$(imageTag) \
+                --cpu 1 \
+                --memory 1.5 \
+                --dns-name-label $(appName) \
+                --ports 8080 \
+                --registry-login-server $(acrLoginServer) \
+                --assign-identity
+
+              echo " Deploy concluído no Azure Container Instance!"
