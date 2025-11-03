@@ -1,0 +1,160 @@
+trigger:
+  branches:
+    include:
+      - main
+      - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  appName: 'myassist554611'
+  acrName: 'acrlorch'
+  acrLoginServer: 'acrlorch.azurecr.io'
+  imageRepository: 'fiap/$(appName)'
+  imageTag: '$(Build.BuildId)'
+  dockerRegistryServiceConnection: 'sc-acr-lorch'
+  azureServiceConnection: 'sc-azure-lorch'
+  resourceGroup: 'LorArch'
+  location: 'eastus'
+  containerPort: '8080'
+
+  # IMPORTANTE: criar estes como SECRETS na UI da pipeline
+  # DB_URL, DB_USER, DB_PASSWORD
+
+stages:
+# =========================
+# CI: Build & Push no ACR
+# =========================
+- stage: Build
+  displayName: 'Build & Push'
+  jobs:
+    - job: build_push
+      steps:
+        - checkout: self
+
+        - task: Docker@2
+          displayName: 'Build & Push image'
+          inputs:
+            containerRegistry: '$(dockerRegistryServiceConnection)'
+            repository: '$(imageRepository)'
+            command: 'buildAndPush'
+            Dockerfile: '**/Dockerfile'
+            tags: |
+              $(imageTag)
+
+        - script: |
+            echo "IMAGE=$(acrLoginServer)/$(imageRepository):$(imageTag)" >> build_vars.txt
+          displayName: 'Persist image ref'
+
+        - publish: build_vars.txt
+          artifact: image_meta
+
+# =========================
+# CD: Deploy no ACI
+# =========================
+- stage: Deploy
+  displayName: 'Deploy to ACI'
+  dependsOn: Build
+  jobs:
+    - job: deploy_aci
+      steps:
+        - download: current
+          artifact: image_meta
+
+        - task: AzureCLI@2
+          displayName: 'Deploy ACI (create/update)'
+          inputs:
+            azureSubscription: '$(azureServiceConnection)'
+            scriptType: bash
+            scriptLocation: inlineScript
+            inlineScript: |
+              set -e
+
+              RG="$(resourceGroup)"
+              ACR="$(acrName)"
+              APP="$(appName)"
+              LOC="$(location)"
+              REPO="$(imageRepository)"
+              PORT="$(containerPort)"
+
+              if [ -f "$(Pipeline.Workspace)/image_meta/build_vars.txt" ]; then
+                . "$(Pipeline.Workspace)/image_meta/build_vars.txt"
+              fi
+              if [ -z "$IMAGE" ]; then
+                TAG=$(az acr repository show-tags -n "$ACR" --repository "$REPO" --top 1 --orderby time_desc -o tsv)
+                IMAGE="${ACR}.azurecr.io/${REPO}:${TAG}"
+              fi
+              echo "IMAGE=$IMAGE"
+
+              ACR_USER=$(az acr credential show -n "$ACR" --query username -o tsv)
+              ACR_PASS=$(az acr credential show -n "$ACR" --query passwords[0].value -o tsv)
+
+              DNS_LABEL="${APP}$(Build.BuildId)"
+
+              az container delete -g "$RG" -n "$APP" --yes --only-show-errors || true
+
+              az container create \
+                -g "$RG" -n "$APP" \
+                --os-type Linux \
+                --image "$IMAGE" \
+                --registry-login-server "${ACR}.azurecr.io" \
+                --registry-username "$ACR_USER" \
+                --registry-password "$ACR_PASS" \
+                --cpu 1 --memory 1.5 \
+                --ports $PORT \
+                --dns-name-label "$DNS_LABEL" \
+                --environment-variables \
+                  DB_URL="$(DB_URL)" \
+                  DB_USER="$(DB_USER)" \
+                  DB_PASSWORD="$(DB_PASSWORD)" \
+                --location "$LOC"
+
+              FQDN=$(az container show -g "$RG" -n "$APP" --query "ipAddress.fqdn" -o tsv)
+              echo "FQDN=$FQDN"
+              echo "##vso[task.setvariable variable=ACI_FQDN;isOutput=true]$FQDN"
+
+        - task: Bash@3
+          name: health
+          displayName: 'Health check (retry)'
+          inputs:
+            targetType: inline
+            script: |
+              set -e
+              FQDN="$(ACI_FQDN)"
+              PORT="$(containerPort)"
+              echo "Checking http://$FQDN:$PORT/actuator/health"
+
+              for i in {1..12}; do
+                if curl -fsS "http://$FQDN:$PORT/actuator/health" | grep -q '"status"'; then
+                  echo "OK: app respondeu."
+                  exit 0
+                fi
+                echo "Tentativa $i/12... aguardando..."
+                sleep 5
+              done
+
+              echo "Health check falhou"
+              echo "==== LOGS DO CONTAINER ===="
+              az container logs -g "$(resourceGroup)" -n "$(appName)" || true
+              exit 1
+
+        - task: Bash@3
+          displayName: 'Resumo de deploy'
+          condition: succeeded()
+          inputs:
+            targetType: inline
+            script: |
+              echo "### Deploy ACI" > summary.md
+              echo "" >> summary.md
+              echo "- **FQDN:** http://$(ACI_FQDN):$(containerPort)" >> summary.md
+              echo "- **Imagem:** $(acrLoginServer)/$(imageRepository):$(imageTag)" >> summary.md
+              echo "- **Resource Group:** $(resourceGroup)" >> summary.md
+              echo "- **Região:** $(location)" >> summary.md
+
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publicar evidência'
+          inputs:
+            PathtoPublish: 'summary.md'
+            ArtifactName: 'evidencias'
+            publishLocation: 'Container'
