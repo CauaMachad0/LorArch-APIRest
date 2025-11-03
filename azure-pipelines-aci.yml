@@ -1,20 +1,11 @@
-# ============================
-# CI/CD COMPLETÃO: TEST + CI + CD (ACI)
-# ============================
-
 trigger:
   branches:
-    include:
-      - main
-      - master
+    include: [ main, master ]
 
 pr:
   branches:
-    include:
-      - main
-      - master
+    include: [ main, master ]
 
-# Variáveis padrão (segredos DB_* criados na UI da pipeline)
 variables:
   appName: 'myassist554611'
   acrName: 'acrlorch'
@@ -28,28 +19,30 @@ variables:
   containerPort: '8080'
   javaVersion: '21'
 
-# ============================
-# STAGE 1: TESTES (build rápido + testes unitários)
-# ============================
 stages:
+# =========================
+# 1) TEST
+# =========================
 - stage: Test
   displayName: 'Testes automatizados'
   jobs:
     - job: unit_tests
-      displayName: 'Gradle test (Java $(javaVersion))'
-      pool:
-        vmImage: 'ubuntu-latest'
+      pool: { vmImage: 'ubuntu-latest' }
       steps:
         - checkout: self
           fetchDepth: 0
 
+        # Evita erro do Cache@2 quando a pasta não existe no post-job
+        - script: |
+            mkdir -p ~/.gradle
+          displayName: 'Pré-criar pasta do cache Gradle'
+
         - task: Cache@2
-          displayName: 'Cache Gradle'
           inputs:
             key: 'gradle | "$(Agent.OS)" | **/gradle*.properties, **/*.gradle*'
-            restoreKeys: |
-              gradle | "$(Agent.OS)"
+            restoreKeys: 'gradle | "$(Agent.OS)"'
             path: ~/.gradle
+          displayName: 'Cache Gradle'
 
         - task: JavaToolInstaller@0
           displayName: 'Instalar Java $(javaVersion)'
@@ -60,43 +53,42 @@ stages:
 
         - script: |
             chmod +x ./gradlew
-            ./gradlew test --no-daemon
-          displayName: 'Executar testes Gradle'
+            ./gradlew test --no-daemon --stacktrace
+          displayName: 'Gradle test'
 
+        # Gradle escreve JUnit em build/test-results/test/*.xml
         - task: PublishTestResults@2
           condition: always()
+          displayName: 'Publicar testes (JUnit)'
           inputs:
-            testResultsFiles: '**/TEST-*.xml'
+            testResultsFiles: '**/build/test-results/test/*.xml'
             testResultsFormat: 'JUnit'
             failTaskOnFailedTests: true
-          displayName: 'Publicar resultados de teste'
 
-# ============================
-# STAGE 2: CI (Build & Push pro ACR)
-# ============================
+# =========================
+# 2) BUILD & PUSH
+# =========================
 - stage: Build
   displayName: 'Build & Push (ACR)'
   dependsOn: Test
-  condition: succeeded()   # falhou teste? nem adianta
+  condition: succeeded()
   jobs:
     - job: build_push
-      displayName: 'Docker build + push'
-      pool:
-        vmImage: 'ubuntu-latest'
+      pool: { vmImage: 'ubuntu-latest' }
       steps:
         - checkout: self
-
         - task: Docker@2
           displayName: 'Build & Push image'
           inputs:
             containerRegistry: '$(dockerRegistryServiceConnection)'
             repository: '$(imageRepository)'
             command: 'buildAndPush'
-            Dockerfile: '**/Dockerfile'
+            Dockerfile: 'Dockerfile'        # se o Dockerfile está na raiz
             tags: |
               $(imageTag)
+              latest
+            addPipelineData: false          # reduz um warning inútil
 
-        # guardar referência completa da imagem
         - script: |
             echo "IMAGE=$(acrLoginServer)/$(imageRepository):$(imageTag)" > build_vars.txt
             cat build_vars.txt
@@ -105,18 +97,17 @@ stages:
         - publish: build_vars.txt
           artifact: image_meta
 
-# ============================
-# STAGE 3: CD (Deploy no ACI)
-# ============================
+# =========================
+# 3) DEPLOY (ACI)
+# =========================
 - stage: Deploy
-  displayName: 'Deploy em Azure Container Instances'
+  displayName: 'Deploy em ACI'
   dependsOn: Build
-  condition: succeeded()   # só se o build deu bom
+  condition: succeeded()
   jobs:
-    # deployment job = integra com "Environments" do DevOps (aprovações/logs)
     - deployment: deploy_aci
       displayName: 'Deploy ACI'
-      environment: 'lorach-aci'   # crie o Environment com esse nome (tipo: Generic)
+      environment: 'lorach-aci'
       strategy:
         runOnce:
           deploy:
@@ -124,7 +115,7 @@ stages:
               - download: current
                 artifact: image_meta
 
-              # Criar/atualizar ACI e EXPORTAR o FQDN como output
+              # Cria/atualiza ACI e expõe FQDN como variável
               - task: AzureCLI@2
                 name: setfqdn
                 displayName: 'Criar/Atualizar ACI e salvar FQDN'
@@ -134,7 +125,6 @@ stages:
                   scriptLocation: inlineScript
                   inlineScript: |
                     set -e
-
                     RG="$(resourceGroup)"
                     ACR="$(acrName)"
                     APP="$(appName)"
@@ -142,7 +132,6 @@ stages:
                     REPO="$(imageRepository)"
                     PORT="$(containerPort)"
 
-                    # carrega imagem do artifact; se não existir, usa última tag do ACR
                     if [ -f "$(Pipeline.Workspace)/image_meta/build_vars.txt" ]; then
                       . "$(Pipeline.Workspace)/image_meta/build_vars.txt"
                     fi
@@ -150,19 +139,13 @@ stages:
                       TAG=$(az acr repository show-tags -n "$ACR" --repository "$REPO" --top 1 --orderby time_desc -o tsv)
                       IMAGE="${ACR}.azurecr.io/${REPO}:${TAG}"
                     fi
-                    echo "IMAGE=$IMAGE"
 
-                    # credenciais do ACR
                     ACR_USER=$(az acr credential show -n "$ACR" --query username -o tsv)
                     ACR_PASS=$(az acr credential show -n "$ACR" --query passwords[0].value -o tsv)
 
-                    # DNS único (1 por build)
                     DNS_LABEL="${APP}$(Build.BuildId)"
-
-                    # remover ACI antigo (idempotente)
                     az container delete -g "$RG" -n "$APP" --yes --only-show-errors || true
 
-                    # criar ACI
                     az container create \
                       -g "$RG" -n "$APP" \
                       --os-type Linux \
@@ -173,97 +156,79 @@ stages:
                       --cpu 1 --memory 1.5 \
                       --ports $PORT \
                       --dns-name-label "$DNS_LABEL" \
-                      --environment-variables \
-                        DB_URL="$(DB_URL)" \
-                        DB_USER="$(DB_USER)" \
-                        DB_PASSWORD="$(DB_PASSWORD)" \
+                      --restart-policy Always \
+                      --environment-variables DB_URL="$(DB_URL)" DB_USER="$(DB_USER)" \
+                      --secure-environment-variables DB_PASSWORD="$(DB_PASSWORD)" \
                       --location "$LOC"
 
-                    # capturar FQDN
                     FQDN=$(az container show -g "$RG" -n "$APP" --query "ipAddress.fqdn" -o tsv)
-                    echo "FQDN=$FQDN"
                     echo "##vso[task.setvariable variable=ACI_FQDN;isOutput=true]$FQDN"
 
-              # HEALTH CHECK usando AzureCLI (autenticado), com retry e logs em caso de falha
+              # Health + exporta logs SEMPRE
               - task: AzureCLI@2
                 name: health
-                displayName: 'Health check + exportar logs se falhar'
+                displayName: 'Health check com retry + exportar logs'
                 inputs:
                   azureSubscription: '$(azureServiceConnection)'
                   scriptType: bash
                   scriptLocation: inlineScript
                   inlineScript: |
-                    set -e
-
+                    set +e
                     RG="$(resourceGroup)"
                     APP="$(appName)"
                     PORT="$(containerPort)"
                     FQDN="$(setfqdn.ACI_FQDN)"
 
-                    if [ -z "$FQDN" ]; then
-                      FQDN=$(az container show -g "$RG" -n "$APP" --query "ipAddress.fqdn" -o tsv)
-                    fi
-
                     echo "Validando http://$FQDN:$PORT/actuator/health"
-
                     OK=0
-                    for i in {1..20}; do
-                      if curl -fsS "http://$FQDN:$PORT/actuator/health" | grep -q '"status"'; then
-                        echo "HEALTH OK"
-                        OK=1
-                        break
+                    for i in {1..30}; do
+                      RES=$(curl -fsS "http://$FQDN:$PORT/actuator/health" 2>/dev/null)
+                      if echo "$RES" | grep -q '"status":"UP"'; then
+                        OK=1; break
                       fi
-                      echo "Tentativa $i/20... aguardando 5s"
-                      sleep 5
+                      echo "Tentativa $i/30... aguardando 7s"
+                      sleep 7
                     done
 
+                    mkdir -p $(Pipeline.Workspace)/aci-logs
+                    echo "FQDN=$FQDN" > $(Pipeline.Workspace)/aci-logs/fqdn.txt
+
+                    az container logs -g "$RG" -n "$APP" > $(Pipeline.Workspace)/aci-logs/app.log || true
+                    az container show -g "$RG" -n "$APP" --query "instanceView.events" -o table \
+                      > $(Pipeline.Workspace)/aci-logs/events.txt || true
+
                     if [ "$OK" -ne 1 ]; then
-                      echo "==== HEALTH FALHOU. CAPTURANDO LOGS DO CONTAINER ===="
-                      mkdir -p $(Pipeline.Workspace)/aci-logs
-                      az container logs -g "$RG" -n "$APP" > $(Pipeline.Workspace)/aci-logs/app.log || true
                       echo "##vso[task.logissue type=error]Health check falhou em http://$FQDN:$PORT/actuator/health"
                       exit 1
                     fi
 
-                    # salvar FQDN para o resumo
-                    echo "FQDN=$FQDN" > $(Pipeline.Workspace)/aci-logs/fqdn.txt
-
-              # Publicar logs do container (quando falha, já terá arquivo)
               - task: PublishBuildArtifacts@1
-                displayName: 'Publicar logs da aplicação (ACI)'
                 condition: always()
+                displayName: 'Publicar logs/FQDN'
                 inputs:
                   PathtoPublish: '$(Pipeline.Workspace)/aci-logs'
                   ArtifactName: 'aci_logs'
                   publishLocation: 'Container'
 
-              # Resumo amigável para evidência no PDF
               - task: Bash@3
-                displayName: 'Gerar resumo da entrega'
-                condition: succeeded()
+                condition: always()
+                displayName: 'Gerar resumo para evidência'
                 inputs:
                   targetType: inline
                   script: |
-                    FQDN_FILE="$(Pipeline.Workspace)/aci-logs/fqdn.txt"
-                    if [ -f "$FQDN_FILE" ]; then
-                      FQDN=$(cat "$FQDN_FILE" | cut -d'=' -f2-)
-                    else
-                      FQDN="$(setfqdn.ACI_FQDN)"
-                    fi
-
+                    FQDN=$(cat "$(Pipeline.Workspace)/aci-logs/fqdn.txt" | cut -d'=' -f2-)
                     echo "### CI/CD – Sprint 4 (DevOps & Cloud)" > summary.md
-                    echo "" >> summary.md
                     echo "- **FQDN (ACI):** http://$FQDN:$(containerPort)" >> summary.md
                     echo "- **Imagem:** $(acrLoginServer)/$(imageRepository):$(imageTag)" >> summary.md
                     echo "- **Resource Group:** $(resourceGroup)" >> summary.md
                     echo "- **Região:** $(location)" >> summary.md
                     echo "- **Repositório ACR:** $(acrName)" >> summary.md
                     echo "- **Pipeline Run:** $(Build.BuildNumber)" >> summary.md
-                    echo "" >> summary.md
-                    echo "_Observação: variáveis sensíveis injetadas via secrets (DB_URL, DB_USER, DB_PASSWORD)._ " >> summary.md
+                    echo "_Secrets usados: DB_URL, DB_USER, DB_PASSWORD (secure)._ " >> summary.md
 
               - task: PublishBuildArtifacts@1
-                displayName: 'Publicar resumo (PDF friendly)'
+                condition: always()
+                displayName: 'Publicar resumo'
                 inputs:
                   PathtoPublish: 'summary.md'
                   ArtifactName: 'evidencias'
