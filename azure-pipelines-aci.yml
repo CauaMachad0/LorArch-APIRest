@@ -18,9 +18,7 @@ variables:
   resourceGroup: 'LorArch'
   location: 'eastus'
   containerPort: '8080'
-
-  # IMPORTANTE: criar estes como SECRETS na UI da pipeline
-  # DB_URL, DB_USER, DB_PASSWORD
+  # Secrets criar na UI: DB_URL, DB_USER, DB_PASSWORD
 
 stages:
 # =========================
@@ -30,6 +28,7 @@ stages:
   displayName: 'Build & Push'
   jobs:
     - job: build_push
+      displayName: 'Build & Push image to ACR'
       steps:
         - checkout: self
 
@@ -43,8 +42,10 @@ stages:
             tags: |
               $(imageTag)
 
+        # Salva a referência da imagem como artifact (opcional, ajuda no debug)
         - script: |
             echo "IMAGE=$(acrLoginServer)/$(imageRepository):$(imageTag)" >> build_vars.txt
+            cat build_vars.txt
           displayName: 'Persist image ref'
 
         - publish: build_vars.txt
@@ -58,11 +59,14 @@ stages:
   dependsOn: Build
   jobs:
     - job: deploy_aci
+      displayName: 'Deploy ACI'
       steps:
         - download: current
           artifact: image_meta
 
+        # DEPLOY: cria/atualiza o ACI e exporta o FQDN como output
         - task: AzureCLI@2
+          name: setfqdn               # <<< NOME DO PASSO (importante!)
           displayName: 'Deploy ACI (create/update)'
           inputs:
             azureSubscription: '$(azureServiceConnection)'
@@ -78,6 +82,7 @@ stages:
               REPO="$(imageRepository)"
               PORT="$(containerPort)"
 
+              # Pega IMAGE do artifact ou do ACR (última tag)
               if [ -f "$(Pipeline.Workspace)/image_meta/build_vars.txt" ]; then
                 . "$(Pipeline.Workspace)/image_meta/build_vars.txt"
               fi
@@ -87,13 +92,20 @@ stages:
               fi
               echo "IMAGE=$IMAGE"
 
+              # Credenciais do ACR
               ACR_USER=$(az acr credential show -n "$ACR" --query username -o tsv)
               ACR_PASS=$(az acr credential show -n "$ACR" --query passwords[0].value -o tsv)
 
+              # Garante login no ACR (debug amigável)
+              az acr login --name "$ACR" >/dev/null
+
+              # DNS único por build
               DNS_LABEL="${APP}$(Build.BuildId)"
 
+              # Remove instância antiga (idempotente)
               az container delete -g "$RG" -n "$APP" --yes --only-show-errors || true
 
+              # Cria container
               az container create \
                 -g "$RG" -n "$APP" \
                 --os-type Linux \
@@ -110,10 +122,12 @@ stages:
                   DB_PASSWORD="$(DB_PASSWORD)" \
                 --location "$LOC"
 
+              # Lê FQDN e exporta como variável de OUTPUT do passo
               FQDN=$(az container show -g "$RG" -n "$APP" --query "ipAddress.fqdn" -o tsv)
               echo "FQDN=$FQDN"
               echo "##vso[task.setvariable variable=ACI_FQDN;isOutput=true]$FQDN"
 
+        # HEALTH-CHECK: lê o output do passo 'setfqdn'
         - task: Bash@3
           name: health
           displayName: 'Health check (retry)'
@@ -121,10 +135,17 @@ stages:
             targetType: inline
             script: |
               set -e
-              FQDN="$(ACI_FQDN)"
+              # Usa output do passo "setfqdn"; se vazio, faz fallback pelo az cli
+              FQDN="$(setfqdn.ACI_FQDN)"
+              if [ -z "$FQDN" ]; then
+                echo "FQDN vazio via output; buscando direto no Azure..."
+                FQDN=$(az container show -g "$(resourceGroup)" -n "$(appName)" --query "ipAddress.fqdn" -o tsv)
+              fi
+
               PORT="$(containerPort)"
               echo "Checking http://$FQDN:$PORT/actuator/health"
 
+              # 12 tentativas (~1 min)
               for i in {1..12}; do
                 if curl -fsS "http://$FQDN:$PORT/actuator/health" | grep -q '"status"'; then
                   echo "OK: app respondeu."
@@ -139,6 +160,7 @@ stages:
               az container logs -g "$(resourceGroup)" -n "$(appName)" || true
               exit 1
 
+        # Resumo para evidência
         - task: Bash@3
           displayName: 'Resumo de deploy'
           condition: succeeded()
@@ -147,7 +169,7 @@ stages:
             script: |
               echo "### Deploy ACI" > summary.md
               echo "" >> summary.md
-              echo "- **FQDN:** http://$(ACI_FQDN):$(containerPort)" >> summary.md
+              echo "- **FQDN:** http://$(setfqdn.ACI_FQDN):$(containerPort)" >> summary.md
               echo "- **Imagem:** $(acrLoginServer)/$(imageRepository):$(imageTag)" >> summary.md
               echo "- **Resource Group:** $(resourceGroup)" >> summary.md
               echo "- **Região:** $(location)" >> summary.md
