@@ -1,0 +1,161 @@
+# ===============================
+# Pipeline CI/CD - LorArch (único)
+# CI: testes + build + push para ACR
+# CD: deploy no Azure Container Instances + health check
+# ===============================
+
+trigger:
+  branches:
+    include:
+      - master
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # ---------- Fixas do projeto ----------
+  appName: 'myassist554611'
+  acrName: 'acrlorch'
+  acrLoginServer: 'acrlorch.azurecr.io'
+  imageRepository: 'fiap/$(appName)'
+  imageTag: '$(Build.BuildId)'
+
+  dockerRegistryServiceConnection: 'sc-acr-lorch'
+  azureServiceConnection: 'sc-azure-lorch'
+
+  resourceGroup: 'LorArch'
+  location: 'eastus'
+  port: '8080'
+  healthPath: '/actuator/health'
+
+  # ---------- Segredos/credenciais ----------
+  # PEGOS DO VARIABLE GROUP (crie vg-lorarch com ACR_USER, ACR_PASS, DB_*)
+  - group: vg-lorarch
+
+stages:
+# =====================================
+# STAGE 1 - CI (testes + build & push)
+# =====================================
+- stage: CI
+  displayName: 'CI - Testes e Build & Push no ACR'
+  jobs:
+
+    # ---------- Testes automatizados (se tiver Gradle no repo) ----------
+    - job: unit_tests
+      displayName: 'Testes automatizados (Gradle se existir)'
+      steps:
+        - checkout: self
+
+        - bash: |
+            set -e
+            if [ -f "./gradlew" ]; then
+              echo "Gradle wrapper encontrado. Rodando testes..."
+              chmod +x ./gradlew
+              ./gradlew clean test --no-daemon --stacktrace
+            else
+              echo "Nenhum gradlew encontrado. Pulando testes (não falha a CI)."
+            fi
+          displayName: 'Executar ./gradlew test (se existir)'
+
+    # ---------- Build & Push Docker ----------
+    - job: build_push
+      displayName: 'Build & Push imagem Docker no ACR'
+      dependsOn: unit_tests
+      steps:
+        - checkout: self
+
+        - task: Docker@2
+          displayName: 'Build & Push para $(acrLoginServer)/$(imageRepository):$(imageTag)'
+          inputs:
+            containerRegistry: '$(dockerRegistryServiceConnection)'
+            repository: '$(imageRepository)'
+            command: 'buildAndPush'
+            Dockerfile: '**/Dockerfile'
+            tags: |
+              $(imageTag)
+
+        # publica um artefato simples com metadados da imagem (opcional, mas bonitinho p/ banca)
+        - bash: |
+            set -e
+            echo '{'                                   >  image_meta.json
+            echo '  "registry": "$(acrLoginServer)",' >> image_meta.json
+            echo '  "repository": "$(imageRepository)",' >> image_meta.json
+            echo '  "tag": "$(imageTag)"'             >> image_meta.json
+            echo '}'                                   >> image_meta.json
+          displayName: 'Gerar image_meta.json'
+
+        - publish: image_meta.json
+          artifact: image_meta
+          displayName: 'Publicar artefato: image_meta'
+
+# =====================================
+# STAGE 2 - CD (Deploy no ACI)
+# =====================================
+- stage: CD
+  displayName: 'CD - Deploy no Azure Container Instances'
+  dependsOn: CI
+  jobs:
+    - job: deploy_aci
+      displayName: 'Criar/atualizar container no ACI'
+      steps:
+        - download: current
+          artifact: image_meta
+          displayName: 'Baixar artefato image_meta'
+
+        - task: AzureCLI@2
+          displayName: 'Deploy no ACI + Health Check'
+          inputs:
+            azureSubscription: '$(azureServiceConnection)'
+            scriptType: bash
+            scriptLocation: inlineScript
+            inlineScript: |
+              set -e
+
+              echo "Login no ACR para garantir pull do ACI..."
+              az acr login --name $(acrName) 1>/dev/null
+
+              echo "Removendo container antigo (se existir)..."
+              az container delete \
+                --resource-group $(resourceGroup) \
+                --name $(appName) \
+                --yes || true
+
+              echo "Criando container $(appName) no ACI..."
+              az container create \
+                --resource-group $(resourceGroup) \
+                --name $(appName) \
+                --location $(location) \
+                --image $(acrLoginServer)/$(imageRepository):$(imageTag) \
+                --cpu 1 \
+                --memory 1.5 \
+                --ports $(port) \
+                --dns-name-label $(appName) \
+                --restart-policy Always \
+                --registry-login-server $(acrLoginServer) \
+                --registry-username "$(ACR_USER)" \
+                --registry-password "$(ACR_PASS)" \
+                --environment-variables \
+                    DB_URL="$(DB_URL)" \
+                    DB_USER="$(DB_USER)" \
+                    DB_PASSWORD="$(DB_PASSWORD)"
+
+              APP_FQDN="http://$(appName).$(location).azurecontainer.io:$(port)"
+              HEALTH_URL="$APP_FQDN$(healthPath)"
+
+              echo "Aguardando container subir e responder em: $HEALTH_URL"
+              # 30 tentativas com espera de 7s (~3,5 min)
+              for i in $(seq 1 30); do
+                STATUS=$(curl -sk -m 5 -o /dev/null -w "%{http_code}" "$HEALTH_URL" || true)
+                echo "Tentativa $i/30 - HTTP $STATUS"
+                if [ "$STATUS" = "200" ]; then
+                  echo "Health OK. Aplicação no ar em: $APP_FQDN"
+                  exit 0
+                fi
+                sleep 7
+              done
+
+              echo "ERRO: Health check não respondeu 200 em tempo hábil."
+              echo "Logs do ACI (últimas linhas):"
+              az container logs --resource-group $(resourceGroup) --name $(appName) --tail 200 || true
+              exit 1
