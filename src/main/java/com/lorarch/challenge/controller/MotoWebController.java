@@ -1,8 +1,8 @@
 package com.lorarch.challenge.controller;
 
 import com.lorarch.challenge.dto.MotoDTO;
-import com.lorarch.challenge.model.StatusMoto;
 import com.lorarch.challenge.service.MotoService;
+import com.lorarch.challenge.service.SetorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,84 +11,59 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+
 @Controller
 @RequestMapping("/motos")
 public class MotoWebController {
 
     @Autowired
-    private MotoService service;
+    private MotoService motoService;
 
-    @GetMapping
-    public String list(Model model) {
-        model.addAttribute("motos", service.listarTodas());
+    @Autowired
+    private SetorService setorService;
+
+    @GetMapping("/listar")
+    public String listarMotos(Model model) {
+        model.addAttribute("motos", motoService.listarTodas());
         return "motos/list";
     }
 
-    @GetMapping("/novo")
-    public String novo(Model model) {
-        model.addAttribute("moto", new MotoDTO());
-        model.addAttribute("statuses", StatusMoto.values());
-        model.addAttribute("action", "/motos");
+    @GetMapping("/nova")
+    public String exibirFormulario(MotoDTO motoDTO, Model model) {
+        model.addAttribute("setores", setorService.listarTodos());
         return "motos/form";
     }
 
-    @PostMapping
-    public String criar(@Valid @ModelAttribute("moto") MotoDTO dto,
-                        BindingResult br, Model model, RedirectAttributes ra) {
-        if (br.hasErrors()) {
-            model.addAttribute("statuses", StatusMoto.values());
-            model.addAttribute("action", "/motos");
+    @PostMapping("/cadastrar")
+    public String cadastrarMoto(@Valid MotoDTO motoDTO, BindingResult result, RedirectAttributes attributes, Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("setores", setorService.listarTodos());
             return "motos/form";
         }
-        service.criarMoto(dto);
-        ra.addFlashAttribute("success", "Moto criada com sucesso!");
-        return "redirect:/motos";
+
+        try {
+            motoService.criarMoto(motoDTO);
+            attributes.addFlashAttribute("success", "Motocicleta cadastrada com sucesso!");
+            return "redirect:/motos/listar";
+        } catch (IllegalArgumentException e) {
+            result.rejectValue("placa", "error.motoDTO", e.getMessage());
+            model.addAttribute("setores", setorService.listarTodos());
+            return "motos/form";
+        }
     }
 
-    @GetMapping("/{id}/editar")
-    public String editar(@PathVariable Long id, Model model) {
-        var moto = service.buscarPorId(id);
-        var dto  = new MotoDTO(moto.getPlaca(), moto.getModelo(),
-                moto.getStatus().name(), moto.getSetor());
-
-        model.addAttribute("moto", dto);
-        model.addAttribute("statuses", StatusMoto.values());
-        model.addAttribute("action", "/motos/" + id);
+    @GetMapping("/editar/{id}")
+    public String editarMoto(@PathVariable Long id, Model model) {
+        MotoDTO dto = new MotoDTO(motoService.buscarPorId(id));
+        model.addAttribute("motoDTO", dto);
+        model.addAttribute("setores", setorService.listarTodos());
         return "motos/form";
     }
 
-    @PostMapping("/{id}")
-    public String atualizar(@PathVariable Long id,
-                            @Valid @ModelAttribute("moto") MotoDTO dto,
-                            BindingResult br, Model model, RedirectAttributes ra) {
-        if (br.hasErrors()) {
-            model.addAttribute("statuses", StatusMoto.values());
-            model.addAttribute("action", "/motos/" + id);
-            return "motos/form";
-        }
-        service.atualizar(id, dto);
-        ra.addFlashAttribute("success", "Moto atualizada com sucesso!");
-        return "redirect:/motos";
-    }
-
-    @PostMapping("/{id}/excluir")
-    public String excluir(@PathVariable Long id, RedirectAttributes ra) {
-        service.deletar(id);
-        ra.addFlashAttribute("success", "Moto excluída.");
-        return "redirect:/motos";
-    }
-
-    @PostMapping("/{id}/manutencao")
-    public String enviarParaManutencao(@PathVariable Long id, RedirectAttributes ra) {
-        service.enviarParaManutencao(id);   // <-- apenas 1 argumento
-        ra.addFlashAttribute("success", "Encaminhada para manutenção.");
-        return "redirect:/motos";
-    }
-
-    @PostMapping("/{id}/concluir-manutencao")
-    public String concluirManutencao(@PathVariable Long id, RedirectAttributes ra) {
-        service.concluirManutencao(id);
-        ra.addFlashAttribute("success", "Manutenção concluída.");
-        return "redirect:/motos";
+    @PostMapping("/deletar/{id}")
+    public String deletarMoto(@PathVariable Long id, RedirectAttributes attributes) {
+        motoService.deletar(id);
+        attributes.addFlashAttribute("success", "Motocicleta deletada com sucesso!");
+        return "redirect:/motos/listar";
     }
 }

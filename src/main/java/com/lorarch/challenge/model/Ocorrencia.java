@@ -10,11 +10,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "CH_MOVIMENTACAO", schema = "RM554611")
+@Table(name = "CH_MOVIMENTACAO", schema = "DBO")
+@SequenceGenerator(name = "seq_ocorrencia", sequenceName = "SEQ_MOV", allocationSize = 1, initialValue = 1, schema = "DBO")
 public class Ocorrencia {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_ocorrencia")
     @Column(name = "ID_MOV")
     private Long id;
 

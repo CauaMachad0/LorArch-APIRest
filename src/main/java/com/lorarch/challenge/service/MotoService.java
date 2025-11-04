@@ -1,5 +1,6 @@
 package com.lorarch.challenge.service;
 
+
 import com.lorarch.challenge.dto.MotoDTO;
 import com.lorarch.challenge.exception.ResourceNotFoundException;
 import com.lorarch.challenge.model.Moto;
@@ -9,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
+
 
 @Service
 @CacheConfig(cacheNames = "motos")
@@ -18,7 +19,6 @@ public class MotoService {
 
     @Autowired
     private MotoRepository motoRepository;
-
     @Transactional
     @CachePut(key = "#result.id")
     @Caching(evict = { @CacheEvict(key = "'all'") })
@@ -59,6 +59,7 @@ public class MotoService {
         moto.setStatus(parseStatus(dto.getStatus()));
         moto.setSetor(dto.getSetor());
         return motoRepository.save(moto);
+
     }
 
     @Transactional
@@ -79,6 +80,7 @@ public class MotoService {
             throw new IllegalStateException("Só é possível enviar para manutenção motos NOVA/DISPONIVEL/EM_USO.");
         moto.setStatus(StatusMoto.EM_MANUTENCAO);
         return motoRepository.save(moto);
+
     }
 
     @Transactional
@@ -90,10 +92,13 @@ public class MotoService {
             throw new IllegalStateException("A moto não está em manutenção.");
         moto.setStatus(StatusMoto.DISPONIVEL);
         return motoRepository.save(moto);
+
     }
 
     private StatusMoto parseStatus(String s) {
         if (s == null) throw new IllegalArgumentException("Status obrigatório.");
         return StatusMoto.valueOf(s.trim().toUpperCase());
+
     }
+
 }

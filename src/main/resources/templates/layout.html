@@ -1,12 +1,12 @@
-<html xmlns:th="http://www.thymeleaf.org" lang="pt" th:fragment="template(title, main)">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt" th:fragment="template(title, main, currentPath)">
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <title th:replace="${title}">LorArch</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
 </head>
 <body>
-<div th:replace="~{fragments/_navbar :: navbar}"></div>
+<div th:replace="~{fragments/_navbar :: navbar(${currentPath})}"></div>
 <main th:replace="${main}"></main>
 </body>
 </html>
-
