@@ -1,21 +1,12 @@
-
 trigger:
   branches:
     include:
-      - main
       - master
-
-pr:
-  branches:
-    include:
       - main
-      - master
-
-pool:
-  vmImage: 'ubuntu-latest'
 
 variables:
-  appName: 'myassist554611'
+  # Nome da app/ACI e prefixos
+  appName: 'myassist554611'         # precisa ser único para DNS
   acrName: 'acrlorch'
   acrLoginServer: 'acrlorch.azurecr.io'
   imageRepository: 'fiap/$(appName)'
@@ -24,113 +15,118 @@ variables:
   azureServiceConnection: 'sc-azure-lorch'
   resourceGroup: 'LorArch'
   location: 'eastus'
-  containerPort: '8080'
+  port: '8080'
+  healthPath: '/actuator/health'
+
+# Variáveis seguras vindas do Variable Group
+variables:
+- group: vg-lorarch
+
+pool:
+  vmImage: 'ubuntu-latest'
 
 stages:
-# ================================
-# ETAPA 1 - BUILD e PUSH (ACR)
-# ================================
-- stage: Build
-  displayName: 'Build & Push para o ACR'
+# ===============================
+# CI: Build & Push para ACR
+# ===============================
+- stage: build_push
+  displayName: 'Build & Push (ACR)'
   jobs:
-    - job: build_push
-      displayName: 'Gerar e enviar imagem Docker'
-      steps:
-        - checkout: self
+  - job: build_push
+    displayName: 'Gerar e enviar imagem Docker'
+    steps:
+    - task: Docker@2
+      displayName: 'Login no ACR'
+      inputs:
+        command: 'login'
+        containerRegistry: '$(dockerRegistryServiceConnection)'
 
-        - task: Docker@2
-          displayName: 'Build & Push imagem no ACR'
-          inputs:
-            containerRegistry: '$(dockerRegistryServiceConnection)'
-            repository: '$(imageRepository)'
-            command: 'buildAndPush'
-            Dockerfile: 'Dockerfile'
-            tags: |
-              $(imageTag)
+    - task: Docker@2
+      displayName: 'Build & Push imagem'
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(imageTag)
 
-        - script: |
-            echo "IMAGE=$(acrLoginServer)/$(imageRepository):$(imageTag)" > build_vars.txt
-          displayName: 'Salvar referência da imagem'
+    # Exporta metadados da imagem para o próximo stage (não é "artifact", é só logging)
+    - bash: |
+        echo "##vso[task.setvariable variable=FULL_IMAGE]$(acrLoginServer)/$(imageRepository):$(imageTag)"
+        echo "Imagem: $(acrLoginServer)/$(imageRepository):$(imageTag)"
+      displayName: 'Exportar referência da imagem'
 
-        - publish: build_vars.txt
-          artifact: image_meta
-
-# ================================
-# ETAPA 2 - DEPLOY (ACI)
-# ================================
-- stage: Deploy
+# ===============================
+# CD: Deploy no ACI
+# ===============================
+- stage: deploy_aci
   displayName: 'Deploy no Azure Container Instance'
-  dependsOn: Build
+  dependsOn: build_push
   jobs:
-    - job: deploy_aci
-      displayName: 'Criar Container no Azure'
-      steps:
-        - download: current
-          artifact: image_meta
+  - job: deploy
+    displayName: 'Criar/Atualizar ACI e Health Check'
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Deploy/Update ACI'
+      inputs:
+        azureSubscription: '$(azureServiceConnection)'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -e
 
-        - task: AzureCLI@2
-          displayName: 'Deploy para Azure Container Instance'
-          inputs:
-            azureSubscription: '$(azureServiceConnection)'
-            scriptType: bash
-            scriptLocation: inlineScript
-            inlineScript: |
-              set -e
+          echo "Usando imagem $(acrLoginServer)/$(imageRepository):$(imageTag)"
 
-              RG="$(resourceGroup)"
-              ACR="$(acrName)"
-              APP="$(appName)"
-              LOC="$(location)"
-              PORT="$(containerPort)"
-              REPO="$(imageRepository)"
+          # Verifica se já existe o container
+          if az container show -g $(resourceGroup) -n $(appName) >/dev/null 2>&1; then
+            echo "ACI existe. Atualizando com nova imagem..."
+            az container update \
+              -g $(resourceGroup) -n $(appName) \
+              --set containers[0].image=$(acrLoginServer)/$(imageRepository):$(imageTag) \
+              --set containers[0].environmentVariables="name=DB_URL value=$(DB_URL)" \
+                    "name=DB_USER value=$(DB_USER)" "name=DB_PASSWORD value=$(DB_PASSWORD)"
+          else
+            echo "Criando ACI..."
+            az container create \
+              -g $(resourceGroup) -n $(appName) \
+              --image $(acrLoginServer)/$(imageRepository):$(imageTag) \
+              --cpu 1 --memory 1.5 \
+              --dns-name-label $(appName) --ports $(port) \
+              --registry-login-server $(acrLoginServer) \
+              --registry-username $(acrName) \
+              --registry-password $(az acr credential show -n $(acrName) --query passwords[0].value -o tsv) \
+              --environment-variables DB_URL="$(DB_URL)" DB_USER="$(DB_USER)" DB_PASSWORD="$(DB_PASSWORD)"
+          fi
 
-              echo "Iniciando deploy no Azure Container Instance..."
-              echo "Resource group: $RG | Região: $LOC"
+          echo "Aguardando container iniciar..."
+          # Espera IP ou FQDN ficar pronto
+          for i in {1..30}; do
+            FQDN=$(az container show -g $(resourceGroup) -n $(appName) --query ipAddress.fqdn -o tsv)
+            if [ -n "$FQDN" ]; then break; fi
+            sleep 5
+          done
 
-              # Recuperar referência da imagem
-              if [ -f "$(Pipeline.Workspace)/image_meta/build_vars.txt" ]; then
-                . "$(Pipeline.Workspace)/image_meta/build_vars.txt"
-              fi
-              if [ -z "$IMAGE" ]; then
-                TAG=$(az acr repository show-tags -n "$ACR" --repository "$REPO" --top 1 --orderby time_desc -o tsv)
-                IMAGE="${ACR}.azurecr.io/${REPO}:${TAG}"
-              fi
+          if [ -z "$FQDN" ]; then
+            echo "FQDN não disponível. Saindo."
+            exit 1
+          fi
 
-              # Pegar credenciais do ACR
-              ACR_USER=$(az acr credential show -n "$ACR" --query username -o tsv)
-              ACR_PASS=$(az acr credential show -n "$ACR" --query passwords[0].value -o tsv)
+          echo "FQDN: $FQDN"
 
-              # Apagar container anterior (se existir)
-              echo "Removendo container anterior (se existir)..."
-              az container delete -g "$RG" -n "$APP" --yes --only-show-errors || true
+          # Health check simples no /actuator/health
+          echo "Fazendo health check: http://$FQDN:$(port)$(healthPath)"
+          for i in {1..30}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "http://$FQDN:$(port)$(healthPath)" || true)
+            if [ "$code" = "200" ]; then
+              echo "Health OK"
+              exit 0
+            fi
+            echo "Ainda não saudável (HTTP $code)... tentando de novo"
+            sleep 7
+          done
 
-              # Criar novo container com variáveis do banco
-              echo "Criando novo container com imagem: $IMAGE"
-              az container create \
-                -g "$RG" \
-                -n "$APP" \
-                --image "$IMAGE" \
-                --os-type Linux \
-                --cpu 1 --memory 1.5 \
-                --ports $PORT \
-                --dns-name-label "$APP" \
-                --registry-login-server "${ACR}.azurecr.io" \
-                --registry-username "$ACR_USER" \
-                --registry-password "$ACR_PASS" \
-                --environment-variables \
-                  DB_URL="$(DB_URL)" \
-                  DB_USER="$(DB_USER)" \
-                  SPRING_DATASOURCE_URL="$(DB_URL)" \
-                  SPRING_DATASOURCE_USERNAME="$(DB_USER)" \
-                  SERVER_PORT="$PORT" \
-                --secure-environment-variables \
-                  DB_PASSWORD="$(DB_PASSWORD)" \
-                  SPRING_DATASOURCE_PASSWORD="$(DB_PASSWORD)" \
-                --restart-policy Always \
-                --location "$LOC"
-
-              echo "Container criado. Buscando URL pública..."
-              FQDN=$(az container show -g "$RG" -n "$APP" --query "ipAddress.fqdn" -o tsv)
-              echo "Aplicação disponível em: http://$FQDN:$PORT"
-
-              echo "Finalizado com sucesso!"
+          echo "Health check falhou após várias tentativas."
+          echo "Logs do container:"
+          az container logs -g $(resourceGroup) -n $(appName) || true
+          exit 1
