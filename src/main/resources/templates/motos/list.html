@@ -1,77 +1,74 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: template(~{::title}, ~{::main})}">
+      th:replace="~{layout :: template(~{::title}, ~{::main}, ${currentPath} ?: '')}">
 <head>
     <meta charset="UTF-8">
-    <title>Motos</title>
+    <title>Motos • LorArch</title>
 </head>
 <body>
-<main class="container">
+<main>
     <h1>Motos</h1>
 
-    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${msg}" class="alert success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert error" th:text="${error}"></div>
 
-    <div class="actions" style="margin:10px 0;">
-        <a class="btn" th:href="@{/motos/nova}">Nova moto</a>
+    <div class="actions mt-16">
+        <a class="btn" th:href="@{/motos/novo}">+ Nova moto</a>
     </div>
 
-    <form th:action="@{/motos}" method="get" class="filters">
-      <input type="text" name="q" th:value="${param.q}" placeholder="Buscar por placa ou setor"/>
-      <button type="submit">Filtrar</button>
+    <form th:action="@{/motos}" method="get" class="search">
+        <input type="text" name="q" th:value="${param.q}" placeholder="Buscar por placa ou setor..." />
+        <button type="submit" class="btn secondary">Filtrar</button>
     </form>
 
     <table class="table">
         <thead>
         <tr>
-            <th>ID</th>
-            <th>Placa</th>
-            <th>Status</th>
-            <th>Setor</th>
-            <th>Ações</th>
+            <th>ID</th><th>Placa</th><th>Status</th><th>Setor</th><th class="right">Ações</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="m : ${motos}">
             <td th:text="${m.id}">1</td>
             <td th:text="${m.placa}">ABC1D23</td>
-            <td th:text="${m.status}">DISPONIVEL</td>
+            <td>
+              <span class="badge"
+                    th:classappend="${m.status?.name()=='DISPONIVEL'} ? ' ok' :
+                                    (${m.status?.name()=='EM_MANUTENCAO'} ? ' manut' : ' warn')"
+                    th:text="${m.status}">DISPONIVEL</span>
+            </td>
             <td th:text="${m.setor}">Operações</td>
-            <td style="white-space: nowrap;">
-                <a th:href="@{|/motos/${m.id}/editar|}">Editar</a>
+            <td class="right">
+                <div class="actions">
+                    <a class="btn ghost small" th:href="@{|/motos/${m.id}/editar|}">Editar</a>
 
-                <form th:action="@{|/motos/${m.id}|}" method="post" style="display:inline; margin-left:6px;">
-                    <input type="hidden" name="_method" value="delete"/>
+                    <form th:action="@{|/motos/${m.id}/excluir|}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button class="btn danger small" type="submit">Excluir</button>
+                    </form>
 
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit" class="link danger" onclick="return confirm('Excluir esta moto?')">Excluir</button>
-                </form>
+                    <form th:if="${m.status?.name() != 'EM_MANUTENCAO'}"
+                          th:action="@{|/motos/${m.id}/manutencao|}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button class="btn small">Enviar p/ manutenção</button>
+                    </form>
 
-                <form th:if="${m.status?.name() != 'EM_MANUTENCAO'}"
-                      th:action="@{|/motos/${m.id}/enviar-manutencao|}" method="post"
-                      style="display:inline; margin-left:6px;">
-
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit">Enviar p/ manutenção</button>
-                </form>
-
-                <form th:if="${m.status?.name() == 'EM_MANUTENCAO'}"
-                      th:action="@{|/motos/${m.id}/concluir-manutencao|}" method="post"
-                      style="display:inline; margin-left:6px;">
-                    <!-- CSRF -->
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit">Concluir manutenção</button>
-                </form>
+                    <form th:if="${m.status?.name() == 'EM_MANUTENCAO'}"
+                          th:action="@{|/motos/${m.id}/concluir-manutencao|}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button class="btn secondary small">Concluir manutenção</button>
+                    </form>
+                </div>
             </td>
         </tr>
         </tbody>
     </table>
 
     <div class="pagination" th:if="${page != null}">
-      <a th:if="${!page.first}" th:href="@{/motos(page=${page.number-1}, size=${page.size})}">« Anterior</a>
-      <span th:text="${page.number + 1}">1</span> / <span th:text="${page.totalPages}">1</span>
-      <a th:if="${!page.last}" th:href="@{/motos(page=${page.number+1}, size=${page.size})}">Próxima »</a>
+        <a th:if="${!page.first}" th:href="@{/motos(page=${page.number-1}, size=${page.size})}">« Anterior</a>
+        <span th:text="${page.number + 1}">1</span> / <span th:text="${page.totalPages}">1</span>
+        <a th:if="${!page.last}" th:href="@{/motos(page=${page.number+1}, size=${page.size})}">Próxima »</a>
     </div>
-
 </main>
 </body>
 </html>

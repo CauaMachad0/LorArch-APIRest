@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="pt">
 <body>
-<div th:fragment="navbar">
-    <a th:href="@{/}">Início</a> |
-    <a th:href="@{/motos}">Motos</a> |
-    <a th:href="@{/ocorrencias}">Ocorrências</a> |
-    <a th:href="@{/logout}">Sair</a>
-</div>
+<nav class="navbar" th:fragment="navbar(currentPath)">
+    <div class="brand"><a th:href="@{/}">LorArch</a></div>
+    <div class="links">
+        <a th:href="@{/motos}"
+           th:classappend="${#strings.startsWith(currentPath,'/motos')} ? ' active' : ''">Motos</a>
+        <a th:href="@{/ocorrencias}"
+           th:classappend="${#strings.startsWith(currentPath,'/ocorrencias')} ? ' active' : ''">Ocorrências</a>
+        <a th:href="@{/logout}">Sair</a>
+    </div>
+</nav>
 </body>
 </html>

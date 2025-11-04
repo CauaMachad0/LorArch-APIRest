@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: template(~{::title}, ~{::main})}">
+      th:replace="~{layout :: template(~{::title}, ~{::main}, '/ocorrencias')}">
 <head>
     <meta charset="UTF-8">
     <title th:text="${ocorrencia.id} != null ? 'Editar Ocorrência' : 'Nova Ocorrência'">Ocorrência</title>

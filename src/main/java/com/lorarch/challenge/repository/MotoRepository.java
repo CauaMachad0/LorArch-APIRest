@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface MotoRepository extends JpaRepository<Moto, Long> {
+public interface
+MotoRepository extends JpaRepository<Moto, Long> {
     Optional<Moto> findByPlaca(String placa);
 }
