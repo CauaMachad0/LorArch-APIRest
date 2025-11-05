@@ -1,8 +1,43 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="pt">
-<head><meta charset="UTF-8"/><title>Início</title></head>
-<body>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Início</title>
+
+</head>
+<body style="background:#f0f2f5; color:#121310;">
+
 <div th:replace="~{fragments/_navbar :: navbar}"></div>
-<h1>Bem-vindo ao LorArch!!</h1>
+
+<section class="container-fluid d-flex align-items-center justify-content-center"
+         style="min-height:40vh; background:linear-gradient(135deg, #121310 0%, #121310 40%, #5F9982 100%);">
+    <div class="text-center px-3">
+        <h1 class="fw-bold mb-2" style="color:#ffffff;">Bem-vindo ao LorArch!</h1>
+        <p class="mb-4" style="color:#eaf6f1;">Gestão inteligente de motos no galpão simples, rápida e em tempo real.</p>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <a th:href="@{/motos}" class="btn btn-lg fw-semibold"
+               style="background:#ffffff; color:#121310; border:1px solid #e1e5ea; border-radius:12px;">
+                Ver motos
+            </a>
+            <a th:href="@{/motos/nova}" class="btn btn-lg fw-semibold"
+               style="background:#5F9982; color:#ffffff; border:1px solid #4b7a68; border-radius:12px;">
+                + Nova moto
+            </a>
+        </div>
+    </div>
+</section>
+
+<main class="container my-4">
+    <div class="card shadow-sm border-0" style="border-radius:16px; background:#ffffff;">
+        <div class="card-body p-4 p-sm-5">
+            <h2 class="h4 fw-bold mb-3" style="color:#121310;">Resumo</h2>
+            <p class="mb-0" style="color:#495057;">
+                Centralize aqui o acompanhamento de <strong>status</strong>, <strong>setor</strong> e
+                <strong>manutenção</strong> das motos. Use o menu acima ou os botões para começar.
+            </p>
+        </div>
+    </div>
+</main>
+
 </body>
 </html>

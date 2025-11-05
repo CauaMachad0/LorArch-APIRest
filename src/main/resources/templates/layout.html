@@ -1,19 +1,15 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="pt" th:fragment="template(title, main)">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title th:replace="${title}">LorArch</title>
-    <link
-            th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"
-            rel="stylesheet"
-    />
-    <script
-            th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"
-            defer
-    ></script>
+
+    <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet"/>
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}" defer></script>
 </head>
-<body>
+<body style="background:#f0f2f5; color:#121310;">
 <div th:replace="~{fragments/_navbar :: navbar}"></div>
+
 <main th:replace="${main}"></main>
 </body>
 </html>
-

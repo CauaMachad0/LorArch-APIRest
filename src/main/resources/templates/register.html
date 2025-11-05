@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Criar conta</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center"
+     style="background: linear-gradient(135deg, #121310 0%, #121310 40%, #4e6a22 100%);">
+
+    <div class="card shadow-lg border-0 rounded-4" style="max-width: 520px; width: 100%; background-color: #f6f8ee;">
+        <div class="card-body p-4 p-sm-5">
+
+            <div class="text-center mb-4">
+                <div class="fw-bold" style="font-size: 1.75rem; color: #121310;">Crie sua conta</div>
+                <div class="small" style="color:#5f7a2b;">Preencha para começar</div>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger py-2 px-3 mb-4 rounded-3 small" role="alert"
+                 style="background-color:#ffe5e5; border:1px solid #f5b5b5; color:#7a1f1f;" th:text="${error}">
+            </div>
+
+            <form th:action="@{/register}" method="post" class="needs-validation" novalidate th:object="${user}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="color:#121310;">Nome completo</label>
+                    <input type="text" th:field="*{fullName}" required
+                           class="form-control form-control-lg rounded-3"
+                           style="border: 1px solid #d6e68a; background-color:#ffffff;"
+                           placeholder="Seu nome">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="color:#121310;">E-mail</label>
+                    <input type="email" th:field="*{email}" required
+                           class="form-control form-control-lg rounded-3"
+                           style="border: 1px solid #d6e68a; background-color:#ffffff;"
+                           placeholder="voce@exemplo.com">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="color:#121310;">Usuário</label>
+                    <input type="text" th:field="*{username}" minlength="3" maxlength="50" required
+                           class="form-control form-control-lg rounded-3"
+                           style="border: 1px solid #d6e68a; background-color:#ffffff;"
+                           placeholder="usuario">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" style="color:#121310;">Senha</label>
+                    <input type="password" th:field="*{password}" minlength="6" required
+                           class="form-control form-control-lg rounded-3"
+                           style="border: 1px solid #d6e68a; background-color:#ffffff;"
+                           placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn btn-lg w-100 rounded-3 fw-semibold"
+                        style="background-color:#4e6a22; color:#f6f8ee; border:1px solid #3f551b;">
+                    Cadastrar
+                </button>
+
+                <div class="text-center mt-3">
+                    <a th:href="@{/login}" class="text-decoration-none small" style="color:#5f7a2b;">Já tenho conta</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
