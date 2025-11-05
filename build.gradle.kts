@@ -33,6 +33,7 @@ dependencies {
     runtimeOnly("com.oracle.database.jdbc:ojdbc11:23.5.0.24.07")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.webjars:bootstrap:5.3.3")
 }
 
 tasks.withType<Test> {

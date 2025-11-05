@@ -5,73 +5,160 @@
     <meta charset="UTF-8">
     <title>Motos</title>
 </head>
-<body>
-<main class="container">
-    <h1>Motos</h1>
+<body style="background:#f6f8ee; color:#121310;">
 
-    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
 
-    <div class="actions" style="margin:10px 0;">
-        <a class="btn" th:href="@{/motos/nova}">Nova moto</a>
+<main class="container py-4">
+    <!-- Topbar -->
+    <div class="w-100" style="background:#121310;">
+        <div class="container d-flex align-items-center justify-content-between py-3">
+            <h1 class="h4 m-0 text-white">Motos</h1>
+            <a class="btn btn-sm" th:href="@{/motos/nova}"
+               style="background:#95aa61; color:#121310; border:0; box-shadow:0 2px 6px rgba(0,0,0,.15);">
+                + Nova moto
+            </a>
+        </div>
+    </div>
+    <div class="alert alert-success shadow-sm border-0" th:if="${msg}" th:text="${msg}"
+         style="background:#d6e68a; color:#121310;"></div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm border-0 mb-3" style="background:#ffffff; border-radius:16px;">
+        <div class="card-body">
+            <form th:action="@{/motos}" method="get" class="row g-2 align-items-center">
+                <div class="col-12 col-md-8">
+                    <div class="input-group">
+              <span class="input-group-text bg-white border-end-0" style="color:#899752; border-radius:12px 0 0 12px;">
+                <i class="bi bi-search"></i>
+              </span>
+                        <input type="text" name="q" th:value="${param.q}" class="form-control border-start-0"
+                               placeholder="Buscar por placa ou setor"
+                               style="border-radius:0 12px 12px 0; box-shadow:none;">
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <button type="submit" class="btn w-100"
+                            style="background:#95aa61; color:#121310; border:0; border-radius:12px;">
+                        Filtrar
+                    </button>
+                </div>
+                <div class="col-6 col-md-2">
+                    <a th:href="@{/motos}" class="btn w-100"
+                       style="background:#899752; color:#f6f8ee; border:0; border-radius:12px;">
+                        Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <form th:action="@{/motos}" method="get" class="filters">
-      <input type="text" name="q" th:value="${param.q}" placeholder="Buscar por placa ou setor"/>
-      <button type="submit">Filtrar</button>
-    </form>
+    <!-- Tabela -->
+    <div class="card shadow-sm border-0" style="border-radius:16px;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead style="background:#121310; color:#f6f8ee;">
+                    <tr>
+                        <th class="text-nowrap ps-4">ID</th>
+                        <th class="text-nowrap">Placa</th>
+                        <th class="text-nowrap">Status</th>
+                        <th class="text-nowrap">Setor</th>
+                        <th class="text-nowrap pe-4 text-end">Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="m : ${motos}" class="border-top">
+                        <td class="ps-4" th:text="${m.id}">1</td>
+                        <td class="fw-semibold" th:text="${m.placa}">ABC1D23</td>
+                        <td>
+                  <span class="badge rounded-pill px-3 py-2"
+                        th:text="${m.status}"
+                        th:classappend="
+                          ${m.status?.name()=='DISPONIVEL'} ? ' bg-success' :
+                          (${m.status?.name()=='EM_USO'} ? ' bg-secondary' :
+                          (${m.status?.name()=='DANIFICADA'} ? ' bg-danger' :
+                          (${m.status?.name()=='EM_MANUTENCAO'} ? ' bg-warning text-dark' :
+                          ' bg-info text-dark')))">
+                    DISPONIVEL
+                  </span>
+                        </td>
+                        <td th:text="${m.setor}">Operações</td>
+                        <td class="text-end pe-4" style="white-space:nowrap;">
+                            <a th:href="@{|/motos/${m.id}/editar|}" class="btn btn-sm me-1"
+                               style="background:#d6e68a; color:#121310; border:0; border-radius:10px;">
+                                Editar
+                            </a>
 
-    <table class="table">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Placa</th>
-            <th>Status</th>
-            <th>Setor</th>
-            <th>Ações</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="m : ${motos}">
-            <td th:text="${m.id}">1</td>
-            <td th:text="${m.placa}">ABC1D23</td>
-            <td th:text="${m.status}">DISPONIVEL</td>
-            <td th:text="${m.setor}">Operações</td>
-            <td style="white-space: nowrap;">
-                <a th:href="@{|/motos/${m.id}/editar|}">Editar</a>
+                            <form th:action="@{|/motos/${m.id}|}" method="post" class="d-inline">
+                                <input type="hidden" name="_method" value="delete"/>
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-sm me-1"
+                                        onclick="return confirm('Excluir esta moto?')"
+                                        style="background:#dc3545; color:#fff; border:0; border-radius:10px;">
+                                    Excluir
+                                </button>
+                            </form>
 
-                <form th:action="@{|/motos/${m.id}|}" method="post" style="display:inline; margin-left:6px;">
-                    <input type="hidden" name="_method" value="delete"/>
+                            <form th:if="${m.status?.name() != 'EM_MANUTENCAO'}"
+                                  th:action="@{|/motos/${m.id}/enviar-manutencao|}" method="post" class="d-inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-sm me-1"
+                                        style="background:#899752; color:#f6f8ee; border:0; border-radius:10px;">
+                                    Enviar p/ manutenção
+                                </button>
+                            </form>
 
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit" class="link danger" onclick="return confirm('Excluir esta moto?')">Excluir</button>
-                </form>
+                            <form th:if="${m.status?.name() == 'EM_MANUTENCAO'}"
+                                  th:action="@{|/motos/${m.id}/concluir-manutencao|}" method="post" class="d-inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-sm"
+                                        style="background:#95aa61; color:#121310; border:0; border-radius:10px;">
+                                    Concluir manutenção
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <form th:if="${m.status?.name() != 'EM_MANUTENCAO'}"
-                      th:action="@{|/motos/${m.id}/enviar-manutencao|}" method="post"
-                      style="display:inline; margin-left:6px;">
-
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit">Enviar p/ manutenção</button>
-                </form>
-
-                <form th:if="${m.status?.name() == 'EM_MANUTENCAO'}"
-                      th:action="@{|/motos/${m.id}/concluir-manutencao|}" method="post"
-                      style="display:inline; margin-left:6px;">
-                    <!-- CSRF -->
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit">Concluir manutenção</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div class="pagination" th:if="${page != null}">
-      <a th:if="${!page.first}" th:href="@{/motos(page=${page.number-1}, size=${page.size})}">« Anterior</a>
-      <span th:text="${page.number + 1}">1</span> / <span th:text="${page.totalPages}">1</span>
-      <a th:if="${!page.last}" th:href="@{/motos(page=${page.number+1}, size=${page.size})}">Próxima »</a>
+        <!-- Paginação -->
+        <div class="card-footer bg-transparent border-0">
+            <nav class="d-flex justify-content-center" th:if="${page != null}">
+                <ul class="pagination m-0">
+                    <li class="page-item" th:classappend="${page.first} ? ' disabled'">
+                        <a class="page-link"
+                           th:href="@{/motos(page=${page.number-1}, size=${page.size})}"
+                           style="color:#121310; background:#d6e68a; border-color:#d6e68a;">« Anterior</a>
+                    </li>
+                    <li class="page-item disabled">
+              <span class="page-link"
+                    style="background:#f6f8ee; border-color:#e9ecef; color:#121310;">
+                <span th:text="${page.number + 1}">1</span> / <span th:text="${page.totalPages}">1</span>
+              </span>
+                    </li>
+                    <li class="page-item" th:classappend="${page.last} ? ' disabled'">
+                        <a class="page-link"
+                           th:href="@{/motos(page=${page.number+1}, size=${page.size})}"
+                           style="color:#121310; background:#d6e68a; border-color:#d6e68a;">Próxima »</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
 
+    <!-- Ações secundárias (mobile) -->
+    <div class="d-md-none mt-3 text-center">
+        <a class="btn btn-lg w-100"
+           th:href="@{/motos/nova}"
+           style="background:#95aa61; color:#121310; border:0; border-radius:14px;">
+            + Nova moto
+        </a>
+    </div>
 </main>
+
+<!-- (Opcional) Ícones Bootstrap se já estiverem no projeto -->
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"> -->
 </body>
 </html>
