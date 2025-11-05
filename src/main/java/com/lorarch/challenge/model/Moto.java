@@ -1,4 +1,4 @@
-package com.lorarch.challenge.model; // Pacote ajustado
+package com.lorarch.challenge.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -9,12 +9,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "CH_MOTOCICLETA", schema = "DBO")
-@SequenceGenerator(name = "seq_moto", sequenceName = "SEQ_MOTO", allocationSize = 1, schema = "DBO")
+@Table(name = "MOTO", schema = "RM554611")
 public class Moto {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_moto")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private Long id;
 
@@ -38,6 +37,7 @@ public class Moto {
     @Column(name = "SETOR", nullable = false, length = 50)
     private String setor;
 
+    // TIMESTAMP no Oracle ↔ LocalDateTime no Java
     @CreationTimestamp
     @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
@@ -46,59 +46,26 @@ public class Moto {
     @Column(name = "DATA_ATUALIZACAO", nullable = false)
     private LocalDateTime dataAtualizacao;
 
-    public Long getId() {
-        return id;
-    }
+    // getters/setters
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getPlaca() {
-        return placa;
-    }
+    public String getPlaca() { return placa; }
+    public void setPlaca(String placa) { this.placa = placa; }
 
-    public void setPlaca(String placa) {
-        this.placa = placa;
-    }
+    public String getModelo() { return modelo; }
+    public void setModelo(String modelo) { this.modelo = modelo; }
 
-    public String getModelo() {
-        return modelo;
-    }
+    public StatusMoto getStatus() { return status; }
+    public void setStatus(StatusMoto status) { this.status = status; }
 
-    public void setModelo(String modelo) {
-        this.modelo = modelo;
-    }
+    public String getSetor() { return setor; }
+    public void setSetor(String setor) { this.setor = setor; }
 
-    public StatusMoto getStatus() {
-        return status;
-    }
+    public LocalDateTime getDataCadastro() { return dataCadastro; }
+    public void setDataCadastro(LocalDateTime dataCadastro) { this.dataCadastro = dataCadastro; }
 
-    public void setStatus(StatusMoto status) {
-        this.status = status;
-    }
-
-    public String getSetor() {
-        return setor;
-    }
-
-    public void setSetor(String setor) {
-        this.setor = setor;
-    }
-
-    public LocalDateTime getDataCadastro() {
-        return dataCadastro;
-    }
-
-    public void setDataCadastro(LocalDateTime dataCadastro) {
-        this.dataCadastro = dataCadastro;
-    }
-
-    public LocalDateTime getDataAtualizacao() {
-        return dataAtualizacao;
-    }
-
-    public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
-        this.dataAtualizacao = dataAtualizacao;
-    }
+    public LocalDateTime getDataAtualizacao() { return dataAtualizacao; }
+    public void setDataAtualizacao(LocalDateTime dataAtualizacao) { this.dataAtualizacao = dataAtualizacao; }
 }

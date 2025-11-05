@@ -1,62 +1,45 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: template(~{::title}, ~{::main}, '/motos/form')}">
+<html xmlns:th="http://www.thymeleaf.org" lang="pt"
+      th:replace="~{layout :: template(~{::title}, ~{::main})}">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="${#strings.contains(action,'/motos/') ? 'Editar moto • LorArch' : 'Nova moto • LorArch'}">
-        Nova moto • LorArch
-    </title>
+    <title th:text="${#strings.contains(action,'/motos/') ? 'Editar moto' : 'Nova moto'}">Nova moto</title>
 </head>
 <body>
-<main class="container">
+<main>
     <h1 th:text="${#strings.contains(action,'/motos/') ? 'Editar moto' : 'Nova moto'}">Nova moto</h1>
 
-    <div th:if="${success}" class="alert success" th:text="${success}"></div>
-    <div th:if="${error}" class="alert error" th:text="${error}"></div>
+    <form th:object="${moto}" th:action="${action}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-    <form th:object="${moto}" th:action="${action}" method="post" class="form card">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-        <div th:if="${#fields.hasErrors('*')}" class="alert error" style="margin-bottom:12px;">
-            <ul>
-                <li th:each="e : ${#fields.errors('*')}" th:text="${e}">Erro</li>
-            </ul>
+        <div>
+            <label>Placa</label>
+            <input type="text" th:field="*{placa}" placeholder="ABC1D23"/>
+            <small th:if="${#fields.hasErrors('placa')}" th:errors="*{placa}"></small>
         </div>
 
-        <div class="grid-2">
-            <div class="field">
-                <label for="placa">Placa</label>
-                <input id="placa" type="text" th:field="*{placa}" placeholder="ABC1D23"/>
-                <small class="error" th:if="${#fields.hasErrors('placa')}" th:errors="*{placa}"></small>
-            </div>
-
-            <div class="field">
-                <label for="modelo">Modelo</label>
-                <input id="modelo" type="text" th:field="*{modelo}" placeholder="Honda Biz 125"/>
-                <small class="error" th:if="${#fields.hasErrors('modelo')}" th:errors="*{modelo}"></small>
-            </div>
-
-            <div class="field">
-                <label for="status">Status</label>
-                <select id="status" th:field="*{status}">
-                    <option value="" hidden>Selecione…</option>
-                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}">DISPONIVEL</option>
-                </select>
-                <small class="error" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></small>
-            </div>
-
-            <div class="field">
-                <label for="setor">Setor</label>
-                <input id="setor" type="text" th:field="*{setor}" placeholder="Galpão A"/>
-                <small class="error" th:if="${#fields.hasErrors('setor')}" th:errors="*{setor}"></small>
-            </div>
+        <div>
+            <label>Modelo</label>
+            <input type="text" th:field="*{modelo}"/>
+            <small th:if="${#fields.hasErrors('modelo')}" th:errors="*{modelo}"></small>
         </div>
 
-        <div class="actions mt-16">
-            <button class="btn" type="submit"
-                    th:text="${#strings.contains(action,'/motos/') ? 'Atualizar' : 'Salvar'}">Salvar</button>
-            <a class="btn ghost" th:href="@{/motos}">Cancelar</a>
+        <div>
+            <label>Status</label>
+            <select th:field="*{status}">
+                <option value="" hidden>Selecione...</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+            </select>
+            <small th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></small>
         </div>
+
+        <div>
+            <label>Setor</label>
+            <input type="text" th:field="*{setor}"/>
+            <small th:if="${#fields.hasErrors('setor')}" th:errors="*{setor}"></small>
+        </div>
+
+        <button type="submit" th:text="${#strings.contains(action,'/motos/') ? 'Atualizar' : 'Salvar'}">Salvar</button>
+        <a th:href="@{/motos}">Cancelar</a>
     </form>
 </main>
 </body>
