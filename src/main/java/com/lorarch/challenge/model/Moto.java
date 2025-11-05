@@ -9,7 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "MOTO", schema = "RM554611")
+@Table(name = "MOTO", schema = "RM558024")
 public class Moto {
 
     @Id
