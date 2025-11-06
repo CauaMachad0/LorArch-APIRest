@@ -63,6 +63,7 @@ public class OcorrenciaWebController {
         Ocorrencia o = ocorrenciaService.buscarPorId(id);
 
         OcorrenciaDTO dto = new OcorrenciaDTO();
+        dto.setId(o.getId());
         dto.setTipo(o.getTipo());
         dto.setDescricao(o.getDescricao());
         dto.setData(o.getData());
@@ -99,5 +100,15 @@ public class OcorrenciaWebController {
         ocorrenciaService.deletar(id);
         ra.addFlashAttribute("success", "Ocorrência excluída.");
         return "redirect:/ocorrencias";
+    }
+
+    @GetMapping("/list")
+    public String listAlias(Model model) {
+        return list(model);
+    }
+
+    @GetMapping("/nova")
+    public String novaAlias(Model model) {
+        return novo(model);
     }
 }

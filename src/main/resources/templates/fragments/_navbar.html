@@ -17,18 +17,43 @@
 
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/}" style="color:#e9ecef;">Início</a>
+                    <a class="nav-link"
+                       th:href="@{/}"
+                       th:classappend="${#httpServletRequest != null and #httpServletRequest.requestURI == '/'} ? ' active' : ''"
+                       style="color:#e9ecef;">
+                        Início
+                    </a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/motos}" style="color:#e9ecef;">Motos</a>
+                    <a class="nav-link"
+                       th:href="@{/motos}"
+                       th:classappend="${#httpServletRequest != null and #httpServletRequest.requestURI.startsWith('/motos')} ? ' active' : ''"
+                       style="color:#e9ecef;">
+                        Motos
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/ocorrencias}"
+                       th:classappend="${#httpServletRequest != null and #httpServletRequest.requestURI.startsWith('/ocorrencias')} ? ' active' : ''"
+                       style="color:#e9ecef;">
+                        Ocorrências
+                    </a>
                 </li>
             </ul>
 
             <div class="d-flex align-items-center gap-2">
-                <a th:href="@{/motos/nova}" class="btn btn-sm fw-semibold"
+                <a th:href="@{/motos/novo}" class="btn btn-sm fw-semibold"
                    style="background:#5F9982; color:#ffffff; border:1px solid #4b7a68; border-radius:10px;">
                     + Nova moto
+                </a>
+
+                <a th:href="@{/ocorrencias/novo}" class="btn btn-sm fw-semibold"
+                   style="background:#5F9982; color:#ffffff; border:1px solid #4b7a68; border-radius:10px;">
+                    + Nova ocorrência
                 </a>
 
                 <a th:href="@{/login}" class="btn btn-sm"
@@ -39,7 +64,6 @@
                    style="background:#5F9982; color:#ffffff; border:1px solid #4b7a68; border-radius:10px;">
                     Criar conta
                 </a>
-
             </div>
         </div>
     </div>

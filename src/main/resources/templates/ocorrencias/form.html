@@ -3,19 +3,18 @@
       th:replace="~{layout :: template(~{::title}, ~{::main})}">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${ocorrencia.id} != null ? 'Editar Ocorrência' : 'Nova Ocorrência'">Ocorrência</title>
+    <title th:text="${action == '/ocorrencias'} ? 'Nova Ocorrência' : 'Editar Ocorrência'">Ocorrência</title>
 </head>
 <body>
 <main>
-    <h1 th:text="${ocorrencia.id} != null ? 'Editar Ocorrência' : 'Nova Ocorrência'">Ocorrência</h1>
+    <h1 th:text="${action == '/ocorrencias'} ? 'Nova Ocorrência' : 'Editar Ocorrência'">Ocorrência</h1>
 
-    <div th:if="${#fields.hasErrors('*')}" style="color:red; margin-bottom:8px;">
-        <p th:each="e : ${#fields.errors('*')}" th:text="${e}">Erro</p>
-    </div>
-
-    <form th:object="${ocorrencia}" th:action="${action}" method="post">
-        <input th:if="${ocorrencia.id != null}" type="hidden" name="_method" value="put"/>
+    <form th:object="${ocorrencia}" th:action="@{${action}}" method="post">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div th:if="${#fields.hasErrors()} " style="color:red; margin-bottom:8px;">
+            <p th:each="e : ${#fields.errors()}" th:text="${e}">Erro</p>
+        </div>
 
         <div>
             <label>Tipo</label><br>
@@ -31,7 +30,7 @@
 
         <div>
             <label>Descrição</label><br>
-            <textarea th:field="*{descricao}" rows="3" cols="40" maxlength="255" required></textarea>
+            <textarea th:field="*{descricao}" rows="3" cols="40" maxlength="200" required></textarea>
             <div th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}" style="color:red;"></div>
         </div>
 

@@ -8,6 +8,9 @@ import java.time.LocalDate;
 
 public class OcorrenciaDTO {
 
+    @NotBlank(message = "O ID é obrigatório.")
+    private Long id;
+
     @NotBlank(message = "O tipo é obrigatório.")
     private String tipo;
 
@@ -27,6 +30,14 @@ public class OcorrenciaDTO {
 
     @NotNull(message = "Selecione o setor.")
     private Long setorId;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getTipo() { return tipo; }
     public void setTipo(String tipo) { this.tipo = tipo; }
