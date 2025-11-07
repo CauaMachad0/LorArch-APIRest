@@ -11,9 +11,15 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Table(name = "MOTO", schema = "RM558024")
 public class Moto {
+    @SequenceGenerator(
+            name = "seq_moto",
+            sequenceName = "SEQ_MOTO",
+            schema = "RM558024",
+            allocationSize = 1
+    )
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_moto")
     @Column(name = "ID")
     private Long id;
 
