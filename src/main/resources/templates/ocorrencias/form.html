@@ -7,68 +7,123 @@
 </head>
 <body>
 <main>
-    <h1 th:text="${action == '/ocorrencias'} ? 'Nova Ocorrência' : 'Editar Ocorrência'">Ocorrência</h1>
 
-    <form th:object="${ocorrencia}" th:action="@{${action}}" method="post">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center"
+         style="background: linear-gradient(135deg, #121310 0%, #121310 50%, #f0f2f5 100%); padding: 24px;">
 
-        <div th:if="${#fields.hasErrors()} " style="color:red; margin-bottom:8px;">
-            <p th:each="e : ${#fields.errors()}" th:text="${e}">Erro</p>
+        <div class="card shadow-lg border-0 rounded-4" style="max-width: 880px; width: 100%; background:#f0f2f5;">
+            <div class="card-body p-4 p-md-5">
+
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 m-0 fw-bold" style="color:#121310;"
+                        th:text="${action == '/ocorrencias'} ? 'Nova Ocorrência' : 'Editar Ocorrência'">Ocorrência</h1>
+                    <a th:href="@{/ocorrencias}" class="btn btn-sm btn-outline-dark rounded-3"
+                       style="border-color:#121310; color:#121310;">Voltar</a>
+                </div>
+
+                <form th:object="${ocorrencia}" th:action="@{${action}}" method="post" class="needs-validation" novalidate>
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                    <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger rounded-3 mb-3"
+                         style="border:1px solid #e6b8b8; background:#fff;">
+                        Há erros no formulário. Verifique os campos destacados.
+                    </div>
+
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger rounded-3 mb-4"
+                         style="border:1px solid #e6b8b8; background:#fff;">
+                        <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}">Erro</p>
+                    </div>
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="color:#121310;">Tipo</label>
+                            <select th:field="*{tipo}" required class="form-select form-select-lg rounded-3"
+                                    style="border:1px solid #121310; background:#fff;">
+                                <option value="">-- selecione --</option>
+                                <option value="ENTRADA">Entrada</option>
+                                <option value="SAIDA">Saída</option>
+                                <option value="MANUTENCAO">Manutenção</option>
+                                <option value="DIAGNOSTICO">Diagnóstico</option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}" class="form-text"
+                                 style="color:#dc3545;"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="color:#121310;">Data</label>
+                            <input type="date" th:field="*{data}" required
+                                   class="form-control form-control-lg rounded-3"
+                                   style="border:1px solid #121310; background:#fff;"/>
+                            <div th:if="${#fields.hasErrors('data')}" th:errors="*{data}" class="form-text"
+                                 style="color:#dc3545;"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" style="color:#121310;">Descrição</label>
+                            <textarea th:field="*{descricao}" rows="3" maxlength="200" required
+                                      class="form-control rounded-3"
+                                      style="border:1px solid #121310; background:#fff;"
+                                      placeholder="Descreva a ocorrência (máx. 200 caracteres)"></textarea>
+                            <div th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}" class="form-text"
+                                 style="color:#dc3545;"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="color:#121310;">Custo</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text rounded-start-3"
+                                      style="background:#121310; color:#f0f2f5; border:#121310;">R$</span>
+                                <input type="number" step="0.01" min="0" th:field="*{custo}" required
+                                       class="form-control rounded-end-3"
+                                       style="border:1px solid #121310; background:#fff;"
+                                       placeholder="0,00">
+                            </div>
+                            <div th:if="${#fields.hasErrors('custo')}" th:errors="*{custo}" class="form-text"
+                                 style="color:#dc3545;"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="color:#121310;">Moto</label>
+                            <select th:field="*{motoId}" required class="form-select form-select-lg rounded-3"
+                                    style="border:1px solid #121310; background:#fff;">
+                                <option value="">-- selecione --</option>
+                                <option th:each="m : ${motos}" th:value="${m.id}" th:text="${m.placa}">ABC1D23</option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('motoId')}" th:errors="*{motoId}" class="form-text"
+                                 style="color:#dc3545;"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="color:#121310;">Setor</label>
+                            <select th:field="*{setorId}" required class="form-select form-select-lg rounded-3"
+                                    style="border:1px solid #121310; background:#fff;">
+                                <option value="">-- selecione --</option>
+                                <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}">Operações</option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('setorId')}" th:errors="*{setorId}" class="form-text"
+                                 style="color:#dc3545;"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-lg rounded-3 fw-semibold"
+                                style="background:#121310; color:#f0f2f5; border:1px solid #121310;">
+                            Salvar
+                        </button>
+                        <a th:href="@{/ocorrencias}" class="btn btn-lg rounded-3 fw-semibold"
+                           style="background:transparent; color:#121310; border:1px solid #121310;">
+                            Cancelar
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
         </div>
+    </div>
 
-        <div>
-            <label>Tipo</label><br>
-            <select th:field="*{tipo}" required>
-                <option value="">-- selecione --</option>
-                <option value="ENTRADA">Entrada</option>
-                <option value="SAIDA">Saída</option>
-                <option value="MANUTENCAO">Manutenção</option>
-                <option value="DIAGNOSTICO">Diagnóstico</option>
-            </select>
-            <div th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}" style="color:red;"></div>
-        </div>
-
-        <div>
-            <label>Descrição</label><br>
-            <textarea th:field="*{descricao}" rows="3" cols="40" maxlength="200" required></textarea>
-            <div th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}" style="color:red;"></div>
-        </div>
-
-        <div>
-            <label>Data</label><br>
-            <input type="date" th:field="*{data}" required/>
-            <div th:if="${#fields.hasErrors('data')}" th:errors="*{data}" style="color:red;"></div>
-        </div>
-
-        <div>
-            <label>Custo</label><br>
-            <input type="number" step="0.01" min="0" th:field="*{custo}" required/>
-            <div th:if="${#fields.hasErrors('custo')}" th:errors="*{custo}" style="color:red;"></div>
-        </div>
-
-        <div>
-            <label>Moto</label><br>
-            <select th:field="*{motoId}" required>
-                <option value="">-- selecione --</option>
-                <option th:each="m : ${motos}" th:value="${m.id}" th:text="${m.placa}">ABC1D23</option>
-            </select>
-            <div th:if="${#fields.hasErrors('motoId')}" th:errors="*{motoId}" style="color:red;"></div>
-        </div>
-
-        <div>
-            <label>Setor</label><br>
-            <select th:field="*{setorId}" required>
-                <option value="">-- selecione --</option>
-                <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}">Operações</option>
-            </select>
-            <div th:if="${#fields.hasErrors('setorId')}" th:errors="*{setorId}" style="color:red;"></div>
-        </div>
-
-        <div style="margin-top:10px;">
-            <button type="submit">Salvar</button>
-            <a th:href="@{/ocorrencias}">Cancelar</a>
-        </div>
-    </form>
 </main>
 </body>
 </html>

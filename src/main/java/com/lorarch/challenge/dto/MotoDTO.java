@@ -1,11 +1,13 @@
 package com.lorarch.challenge.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class MotoDTO {
 
+    @Null
     private Long id;
 
     @NotBlank(message = "A placa é obrigatória.")

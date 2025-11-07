@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 public class OcorrenciaDTO {
 
-    @NotBlank(message = "O ID é obrigatório.")
+    @Null
     private Long id;
 
     @NotBlank(message = "O tipo é obrigatório.")

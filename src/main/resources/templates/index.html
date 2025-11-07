@@ -9,19 +9,20 @@
 <div th:replace="~{fragments/_navbar :: navbar}"></div>
 
 <section class="container-fluid d-flex align-items-center justify-content-center"
-         style="min-height:44vh; background:linear-gradient(135deg, #121310 0%, #121310 40%, #5F9982 100%);">
-    <div class="text-center px-3">
+         style="min-height:48vh; background:linear-gradient(135deg, #121310 0%, #121310 60%, #f0f2f5 100%);">
+    <div class="text-center px-3" style="max-width: 920px;">
         <h1 class="fw-bold mb-2" style="color:#ffffff;">Bem-vindo ao LorArch!</h1>
-        <p class="mb-4" style="color:#eaf6f1;">
+        <p class="mb-4" style="color:rgba(255,255,255,.85);">
             Gestão inteligente de motos no galpão — simples, rápida e em tempo real.
         </p>
-        <div class="d-flex gap-2 justify-content-center flex-wrap">
+
+        <div class="d-flex flex-wrap justify-content-center gap-2 gap-sm-3">
             <a th:href="@{/motos}" class="btn btn-lg fw-semibold"
-               style="background:#ffffff; color:#121310; border:1px solid #e1e5ea; border-radius:12px;">
+               style="background:#ffffff; color:#121310; border:1px solid rgba(18,19,16,.15); border-radius:12px;">
                 Ver motos
             </a>
             <a th:href="@{/motos/novo}" class="btn btn-lg fw-semibold"
-               style="background:#5F9982; color:#ffffff; border:1px solid #4b7a68; border-radius:12px;">
+               style="background:#121310; color:#f0f2f5; border:1px solid #121310; border-radius:12px;">
                 + Nova moto
             </a>
             <a th:href="@{/ocorrencias}" class="btn btn-lg fw-semibold"
@@ -29,75 +30,75 @@
                 Ver ocorrências
             </a>
             <a th:href="@{/ocorrencias/novo}" class="btn btn-lg fw-semibold"
-               style="background:#ffffff; color:#121310; border:1px solid #e1e5ea; border-radius:12px;">
+               style="background:#ffffff; color:#121310; border:1px solid rgba(18,19,16,.15); border-radius:12px;">
                 + Nova ocorrência
             </a>
         </div>
     </div>
 </section>
 
-<main class="container my-4">
+<main class="container py-4 py-md-5">
 
-    <div class="row g-3">
-        <div class="col-12 col-md-6">
+    <div class="row g-4">
+        <div class="col-12 col-lg-6">
             <div class="card shadow-sm border-0 h-100" style="border-radius:16px; background:#ffffff;">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <h2 class="h5 fw-bold m-0" style="color:#121310;">Navegação rápida</h2>
                     </div>
 
-                    <div class="row g-2">
+                    <div class="row g-2 g-sm-3">
                         <div class="col-12 col-sm-6">
                             <a th:href="@{/motos}" class="btn w-100 py-3 fw-semibold"
-                               style="background:#5F9982; color:#ffffff; border:1px solid #4b7a68; border-radius:12px;">
+                               style="background:#121310; color:#f0f2f5; border:1px solid #121310; border-radius:12px;">
                                 Motos
                             </a>
                         </div>
                         <div class="col-12 col-sm-6">
                             <a th:href="@{/motos/nova}" class="btn w-100 py-3 fw-semibold"
-                               style="background:#ffffff; color:#121310; border:1px solid #dfe3e6; border-radius:12px;">
+                               style="background:#ffffff; color:#121310; border:1px solid rgba(18,19,16,.15); border-radius:12px;">
                                 + Nova moto
                             </a>
                         </div>
                         <div class="col-12 col-sm-6">
                             <a th:href="@{/ocorrencias}" class="btn w-100 py-3 fw-semibold"
-                               style="background:#ffffff; color:#121310; border:1px solid #dfe3e6; border-radius:12px;">
+                               style="background:#ffffff; color:#121310; border:1px solid rgba(18,19,16,.15); border-radius:12px;">
                                 Ocorrências
                             </a>
                         </div>
                         <div class="col-12 col-sm-6">
                             <a th:href="@{/ocorrencias/nova}" class="btn w-100 py-3 fw-semibold"
-                               style="background:#5F9982; color:#ffffff; border:1px solid #4b7a68; border-radius:12px;">
+                               style="background:#121310; color:#f0f2f5; border:1px solid #121310; border-radius:12px;">
                                 + Nova ocorrência
                             </a>
                         </div>
                     </div>
 
-                    <div class="small mt-3" style="color:#6c757d;">
+                    <div class="small mt-3 text-center text-sm-start" style="color:rgba(18,19,16,.66);">
                         Dica: use os botões acima para acessar rapidamente o fluxo de cadastro e consulta.
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-lg-6">
             <div class="card shadow-sm border-0 h-100" style="border-radius:16px; background:#ffffff;">
                 <div class="card-body p-4">
                     <h2 class="h5 fw-bold mb-3" style="color:#121310;">Resumo</h2>
-                    <p class="mb-3" style="color:#495057;">
+                    <p class="mb-3" style="color:#121310;">
                         O <strong>LorArch</strong> centraliza o acompanhamento de <strong>status</strong>,
                         <strong>setor</strong> e <strong>manutenção</strong> das motos dentro do galpão,
                         oferecendo uma experiência ágil para cadastro, consulta e atualização de registros.
                     </p>
-                    <ul class="mb-3" style="color:#495057;">
+                    <ul class="mb-3" style="color:#121310;">
                         <li class="mb-1">Visualize a lista de motos com status em tempo real.</li>
                         <li class="mb-1">Cadastre novas motos e atualize dados existentes.</li>
                         <li class="mb-1">Registre e acompanhe <strong>ocorrências</strong> operacionais.</li>
                         <li class="mb-1">Envie motos para <strong>manutenção</strong> e conclua o processo quando finalizado.</li>
                     </ul>
-                    <div class="p-3 rounded-3" style="background:#f8fbfa; border:1px dashed #cfe5dd;">
+                    <div class="p-3 rounded-3" style="background:#f0f2f5; border:1px dashed rgba(18,19,16,.2);">
                         <div class="fw-semibold mb-1" style="color:#121310;">Como começar</div>
-                        <div class="small" style="color:#6c757d;">
+                        <div class="small" style="color:rgba(18,19,16,.66);">
                             Acesse <em>Motos</em> para gerenciar a frota ou <em>Ocorrências</em> para registrar eventos.
                             Use os botões rápidos acima para ir direto ao ponto.
                         </div>
@@ -105,6 +106,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
 </main>
