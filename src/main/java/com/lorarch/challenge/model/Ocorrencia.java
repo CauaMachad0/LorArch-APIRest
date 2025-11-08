@@ -64,6 +64,7 @@ public class Ocorrencia {
     private Long idSetorDuplicado;
 
     @PrePersist
+    @PreUpdate
     public void prePersist() {
         if (data == null) data = LocalDate.now();
         if (dataMovimento == null) dataMovimento = this.data;

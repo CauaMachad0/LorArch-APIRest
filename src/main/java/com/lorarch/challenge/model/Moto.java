@@ -37,7 +37,6 @@ public class Moto {
     @Column(name = "STATUS", nullable = false, length = 20)
     private StatusMoto status;
 
-
     @Size(max = 60)
     @Column(name = "SETOR", length = 60)
     private String setor;
@@ -50,7 +49,6 @@ public class Moto {
     @Column(name = "DATA_ATUALIZACAO")
     private LocalDateTime dataAtualizacao;
 
-    // getters/setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

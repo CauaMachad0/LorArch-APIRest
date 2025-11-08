@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -95,5 +97,18 @@ public class MotoService {
     private StatusMoto parseStatus(String s) {
         if (s == null) throw new IllegalArgumentException("Status obrigatório.");
         return StatusMoto.valueOf(s.trim().toUpperCase());
+    }
+
+    @Cacheable(key = "{#termoBusca, #pageable.pageNumber}")
+    public Page<Moto> buscarTodas(String termoBusca, Pageable pageable) {
+        if (termoBusca == null || termoBusca.trim().isEmpty()) {
+            return motoRepository.findAll(pageable);
+        } else {
+            return motoRepository.findByPlacaContainingIgnoreCaseOrSetorContainingIgnoreCase(
+                    termoBusca,
+                    termoBusca,
+                    pageable
+            );
+        }
     }
 }

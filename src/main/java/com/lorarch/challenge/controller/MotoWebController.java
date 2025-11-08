@@ -1,10 +1,13 @@
 package com.lorarch.challenge.controller;
 
 import com.lorarch.challenge.dto.MotoDTO;
+import com.lorarch.challenge.model.Moto;
 import com.lorarch.challenge.model.StatusMoto;
 import com.lorarch.challenge.service.MotoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,8 +22,13 @@ public class MotoWebController {
     private MotoService service;
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("motos", service.listarTodas());
+    public String list(@RequestParam(value = "q", required = false) String termoBusca,
+                       Pageable pageable,
+                       Model model) {
+        Page<Moto> motosPage = service.buscarTodas(termoBusca, pageable);
+        model.addAttribute("motos", motosPage.getContent());
+        model.addAttribute("page", motosPage);
+
         return "motos/list";
     }
 
