@@ -33,7 +33,7 @@ public class OcorrenciaWebController {
     @GetMapping("/novo")
     public String novo(Model model) {
         model.addAttribute("form", new OcorrenciaDTO());
-        model.addAttribute("tipos", List.of(TipoMovimento.values()));   // enum
+        model.addAttribute("tipos", java.util.List.of(TipoMovimento.values()));
         model.addAttribute("motos", motoService.listarTodas());
         model.addAttribute("setores", setorService.listarTodos());
         model.addAttribute("action", "/ocorrencias");
@@ -41,10 +41,9 @@ public class OcorrenciaWebController {
     }
 
     @PostMapping
-    public String criar(@Valid @ModelAttribute("form") OcorrenciaDTO dto,
-                        BindingResult br, Model model, RedirectAttributes ra) {
+    public String criar(@Valid @ModelAttribute("form") OcorrenciaDTO dto, BindingResult br, Model model, RedirectAttributes ra) {
         if (br.hasErrors()) {
-            model.addAttribute("tipos", List.of(TipoMovimento.values())); // enum
+            model.addAttribute("tipos", java.util.List.of(TipoMovimento.values()));
             model.addAttribute("motos", motoService.listarTodas());
             model.addAttribute("setores", setorService.listarTodos());
             model.addAttribute("action", "/ocorrencias");

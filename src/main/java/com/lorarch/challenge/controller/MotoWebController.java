@@ -61,11 +61,6 @@ public class MotoWebController {
     public String atualizar(@PathVariable Long id,
                             @Valid @ModelAttribute("moto") MotoDTO dto,
                             BindingResult br, Model model, RedirectAttributes ra) {
-        if (br.hasErrors()) {
-            model.addAttribute("statuses", StatusMoto.values());
-            model.addAttribute("action", "/motos/" + id);
-            return "motos/form";
-        }
         service.atualizar(id, dto);
         ra.addFlashAttribute("success", "Moto atualizada com sucesso!");
         return "redirect:/motos";
@@ -78,9 +73,9 @@ public class MotoWebController {
         return "redirect:/motos";
     }
 
-    @PostMapping("/{id}/manutencao")
+    @PostMapping("/{id}/enviar-manutencao")
     public String enviarParaManutencao(@PathVariable Long id, RedirectAttributes ra) {
-        service.enviarParaManutencao(id);   // <-- apenas 1 argumento
+        service.enviarParaManutencao(id);
         ra.addFlashAttribute("success", "Encaminhada para manutenção.");
         return "redirect:/motos";
     }

@@ -43,8 +43,10 @@ public class OcorrenciaService {
         o.setMoto(moto);
         o.setSetor(setor);
         o.setTipo(dto.getTipo());
+        o.setTipoMovimentoExtra(dto.getTipo());
         o.setDescricao(dto.getDescricao());
         o.setData(dto.getData());
+        o.setDataMovimento(dto.getData());
         o.setCusto(dto.getCusto());
 
         return ocorrenciaRepository.save(o);
@@ -80,8 +82,10 @@ public class OcorrenciaService {
         }
 
         o.setTipo(dto.getTipo());
+        o.setTipoMovimentoExtra(dto.getTipo());
         o.setDescricao(dto.getDescricao());
         o.setData(dto.getData());
+        o.setDataMovimento(dto.getData());
         o.setCusto(dto.getCusto());
 
         return ocorrenciaRepository.save(o);

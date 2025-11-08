@@ -40,10 +40,11 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" style="color:#121310;">Tipo</label>
                             <select class="form-select" th:field="*{tipo}">
-                                <option value="" disabled selected>Selecione...</option>
+                                <option th:if="${form.tipo == null}" value="" disabled selected>Selecione...</option>
                                 <option th:each="t : ${tipos}"
-                                        th:value="${t}"
-                                        th:text="${#strings.capitalize(#strings.toLowerCase(t.name()))}"></option>
+                                        th:value="${t.name()}"
+                                        th:text="${#strings.capitalize(#strings.toLowerCase(t.name()))}">
+                                </option>
                             </select>
                             <div th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}" class="form-text"
                                  style="color:#dc3545;"></div>
@@ -84,10 +85,9 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" style="color:#121310;">Moto</label>
-                            <select th:field="*{motoId}" required class="form-select form-select-lg rounded-3"
-                                    style="border:1px solid #121310; background:#fff;">
+                            <select th:field="*{motoId}" required class="form-select">
                                 <option value="">-- selecione --</option>
-                                <option th:each="m : ${motos}" th:value="${m.id}" th:text="${m.placa}">ABC1D23</option>
+                                <option th:each="m : ${motos}" th:value="${m.id}" th:text="${m.placa}"></option>
                             </select>
                             <div th:if="${#fields.hasErrors('motoId')}" th:errors="*{motoId}" class="form-text"
                                  style="color:#dc3545;"></div>
@@ -95,10 +95,9 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" style="color:#121310;">Setor</label>
-                            <select th:field="*{setorId}" required class="form-select form-select-lg rounded-3"
-                                    style="border:1px solid #121310; background:#fff;">
+                            <select th:field="*{setorId}" required class="form-select">
                                 <option value="">-- selecione --</option>
-                                <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}">Operações</option>
+                                <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}"></option>
                             </select>
                             <div th:if="${#fields.hasErrors('setorId')}" th:errors="*{setorId}" class="form-text"
                                  style="color:#dc3545;"></div>

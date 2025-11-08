@@ -21,6 +21,9 @@
     <div class="alert alert-success shadow-sm border-0" th:if="${msg}" th:text="${msg}"
          style="background:#5F9982; color:#ffffff;"></div>
 
+    <div class="alert alert-success shadow-sm border-0" th:if="${success}" th:text="${success}"
+         style="background:#5F9982; color:#ffffff;"></div>
+
     <div class="card shadow-sm border-0 mb-3" style="background:#ffffff; border-radius:16px;">
         <div class="card-body">
             <form th:action="@{/motos}" method="get" class="row g-2 align-items-center">
@@ -82,13 +85,12 @@
                         </td>
                         <td th:text="${m.setor}">Operações</td>
                         <td class="text-end pe-4" style="white-space:nowrap;">
-                            <a th:href="@{|/motos/${m.id}/editar|}" class="btn btn-sm me-1"
+                            <a th:href="@{/motos/{id}/editar(id=${m.id})}" class="btn btn-sm me-1"
                                style="background:#5F9982; color:#ffffff; border:0; border-radius:10px;">
                                 Editar
                             </a>
 
-                            <form th:action="@{|/motos/${m.id}|}" method="post" class="d-inline">
-                                <input type="hidden" name="_method" value="delete"/>
+                            <form th:action="@{/motos/{id}/excluir(id=${m.id})}" method="post" class="d-inline">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                 <button type="submit" class="btn btn-sm me-1"
                                         onclick="return confirm('Excluir esta moto?')"
@@ -98,7 +100,7 @@
                             </form>
 
                             <form th:if="${m.status?.name() != 'EM_MANUTENCAO'}"
-                                  th:action="@{|/motos/${m.id}/enviar-manutencao|}" method="post" class="d-inline">
+                                  th:action="@{/motos/{id}/enviar-manutencao(id=${m.id})}" method="post" class="d-inline">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                 <button type="submit" class="btn btn-sm me-1"
                                         style="background:#5F9982; color:#ffffff; border:0; border-radius:10px;">
@@ -107,7 +109,7 @@
                             </form>
 
                             <form th:if="${m.status?.name() == 'EM_MANUTENCAO'}"
-                                  th:action="@{|/motos/${m.id}/concluir-manutencao|}" method="post" class="d-inline">
+                                  th:action="@{/motos/{id}/concluir-manutencao(id=${m.id})}" method="post" class="d-inline">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                 <button type="submit" class="btn btn-sm"
                                         style="background:#5F9982; color:#ffffff; border:0; border-radius:10px;">
