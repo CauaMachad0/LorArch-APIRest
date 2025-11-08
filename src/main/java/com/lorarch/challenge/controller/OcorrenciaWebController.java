@@ -2,6 +2,7 @@ package com.lorarch.challenge.controller;
 
 import com.lorarch.challenge.dto.OcorrenciaDTO;
 import com.lorarch.challenge.model.Ocorrencia;
+import com.lorarch.challenge.model.TipoMovimento;
 import com.lorarch.challenge.service.MotoService;
 import com.lorarch.challenge.service.OcorrenciaService;
 import com.lorarch.challenge.service.SetorService;
@@ -19,24 +20,20 @@ import java.util.List;
 @RequestMapping("/ocorrencias")
 public class OcorrenciaWebController {
 
-    @Autowired
-    private OcorrenciaService ocorrenciaService;
-    @Autowired
-    private MotoService motoService;
-    @Autowired
-    private SetorService setorService;
+    @Autowired private OcorrenciaService ocorrenciaService;
+    @Autowired private MotoService motoService;
+    @Autowired private SetorService setorService;
 
     @GetMapping
     public String list(Model model) {
-        List<Ocorrencia> ocorrencias = ocorrenciaService.listarTodas();
-        model.addAttribute("ocorrencias", ocorrencias);
+        model.addAttribute("ocorrencias", ocorrenciaService.listarTodas());
         return "ocorrencias/list";
     }
 
     @GetMapping("/novo")
     public String novo(Model model) {
-        model.addAttribute("ocorrencia", new OcorrenciaDTO());
-        model.addAttribute("tipos", List.of("Entrada","Saida","Manutencao","Diagnostico"));
+        model.addAttribute("form", new OcorrenciaDTO());
+        model.addAttribute("tipos", List.of(TipoMovimento.values()));   // enum
         model.addAttribute("motos", motoService.listarTodas());
         model.addAttribute("setores", setorService.listarTodos());
         model.addAttribute("action", "/ocorrencias");
@@ -44,10 +41,10 @@ public class OcorrenciaWebController {
     }
 
     @PostMapping
-    public String criar(@Valid @ModelAttribute("ocorrencia") OcorrenciaDTO dto,
+    public String criar(@Valid @ModelAttribute("form") OcorrenciaDTO dto,
                         BindingResult br, Model model, RedirectAttributes ra) {
         if (br.hasErrors()) {
-            model.addAttribute("tipos", List.of("Entrada","Saida","Manutencao","Diagnostico"));
+            model.addAttribute("tipos", List.of(TipoMovimento.values())); // enum
             model.addAttribute("motos", motoService.listarTodas());
             model.addAttribute("setores", setorService.listarTodos());
             model.addAttribute("action", "/ocorrencias");
@@ -64,15 +61,15 @@ public class OcorrenciaWebController {
 
         OcorrenciaDTO dto = new OcorrenciaDTO();
         dto.setId(o.getId());
-        dto.setTipo(o.getTipo());
+        dto.setTipo(o.getTipo()); // enum direto (SEM .name())
         dto.setDescricao(o.getDescricao());
         dto.setData(o.getData());
         dto.setCusto(o.getCusto());
         dto.setMotoId(o.getMoto().getId());
         dto.setSetorId(o.getSetor().getId());
 
-        model.addAttribute("ocorrencia", dto);
-        model.addAttribute("tipos", List.of("Entrada","Saida","Manutencao","Diagnostico"));
+        model.addAttribute("form", dto);
+        model.addAttribute("tipos", List.of(TipoMovimento.values())); // enum
         model.addAttribute("motos", motoService.listarTodas());
         model.addAttribute("setores", setorService.listarTodos());
         model.addAttribute("action", "/ocorrencias/" + id);
@@ -81,10 +78,10 @@ public class OcorrenciaWebController {
 
     @PostMapping("/{id}")
     public String atualizar(@PathVariable Long id,
-                            @Valid @ModelAttribute("ocorrencia") OcorrenciaDTO dto,
+                            @Valid @ModelAttribute("form") OcorrenciaDTO dto,
                             BindingResult br, Model model, RedirectAttributes ra) {
         if (br.hasErrors()) {
-            model.addAttribute("tipos", List.of("Entrada","Saida","Manutencao","Diagnostico"));
+            model.addAttribute("tipos", List.of(TipoMovimento.values())); // enum
             model.addAttribute("motos", motoService.listarTodas());
             model.addAttribute("setores", setorService.listarTodos());
             model.addAttribute("action", "/ocorrencias/" + id);
@@ -102,13 +99,6 @@ public class OcorrenciaWebController {
         return "redirect:/ocorrencias";
     }
 
-    @GetMapping("/list")
-    public String listAlias(Model model) {
-        return list(model);
-    }
-
-    @GetMapping("/nova")
-    public String novaAlias(Model model) {
-        return novo(model);
-    }
+    @GetMapping("/list") public String listAlias(Model model) { return list(model); }
+    @GetMapping("/nova") public String novaAlias(Model model) { return novo(model); }
 }

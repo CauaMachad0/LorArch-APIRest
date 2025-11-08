@@ -16,22 +16,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 @CacheConfig(cacheNames = "ocorrencias")
 public class OcorrenciaService {
 
-    @Autowired
-    private OcorrenciaRepository ocorrenciaRepository;
-
-    @Autowired
-    private MotoRepository motoRepository;
-
-    @Autowired
-    private SetorRepository setorRepository;
-
-    private static final Set<String> TIPOS_VALIDOS = Set.of("Entrada", "Saida", "Manutencao", "Diagnostico");
+    @Autowired private OcorrenciaRepository ocorrenciaRepository;
+    @Autowired private MotoRepository motoRepository;
+    @Autowired private SetorRepository setorRepository;
 
     public Page<Ocorrencia> listarPaginado(Pageable pageable) {
         return ocorrenciaRepository.findAll(pageable);
@@ -41,8 +33,6 @@ public class OcorrenciaService {
     @CachePut(key = "#result.id")
     @Caching(evict = { @CacheEvict(key = "'all'") })
     public Ocorrencia criar(OcorrenciaDTO dto) {
-        validarTipo(dto.getTipo());
-
         Moto moto = motoRepository.findById(dto.getMotoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Moto não encontrada com ID: " + dto.getMotoId()));
 
@@ -75,8 +65,6 @@ public class OcorrenciaService {
     @CachePut(key = "#id")
     @Caching(evict = { @CacheEvict(key = "'all'") })
     public Ocorrencia atualizar(Long id, OcorrenciaDTO dto) {
-        validarTipo(dto.getTipo());
-
         Ocorrencia o = buscarPorId(id);
 
         if (!o.getMoto().getId().equals(dto.getMotoId())) {
@@ -105,12 +93,5 @@ public class OcorrenciaService {
     public void deletar(Long id) {
         Ocorrencia o = buscarPorId(id);
         ocorrenciaRepository.delete(o);
-    }
-
-    private void validarTipo(String tipo) {
-        if (tipo == null || !TIPOS_VALIDOS.contains(tipo.trim())) {
-            throw new IllegalArgumentException("Tipo inválido. Use: " + String.join(", ", TIPOS_VALIDOS));
-        }
-
     }
 }

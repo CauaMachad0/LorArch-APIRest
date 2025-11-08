@@ -21,8 +21,9 @@
                        style="border-color:#121310; color:#121310;">Voltar</a>
                 </div>
 
-                <form th:object="${ocorrencia}" th:action="@{${action}}" method="post" class="needs-validation" novalidate>
+                <form th:object="${form}" th:action="@{${action}}" method="post" class="needs-validation" novalidate>
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" th:field="*{id}"/>
 
                     <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger rounded-3 mb-3"
                          style="border:1px solid #e6b8b8; background:#fff;">
@@ -38,13 +39,11 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" style="color:#121310;">Tipo</label>
-                            <select th:field="*{tipo}" required class="form-select form-select-lg rounded-3"
-                                    style="border:1px solid #121310; background:#fff;">
-                                <option value="">-- selecione --</option>
-                                <option value="ENTRADA">Entrada</option>
-                                <option value="SAIDA">Saída</option>
-                                <option value="MANUTENCAO">Manutenção</option>
-                                <option value="DIAGNOSTICO">Diagnóstico</option>
+                            <select class="form-select" th:field="*{tipo}">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option th:each="t : ${tipos}"
+                                        th:value="${t}"
+                                        th:text="${#strings.capitalize(#strings.toLowerCase(t.name()))}"></option>
                             </select>
                             <div th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}" class="form-text"
                                  style="color:#dc3545;"></div>
@@ -61,7 +60,7 @@
 
                         <div class="col-12">
                             <label class="form-label fw-semibold" style="color:#121310;">Descrição</label>
-                            <textarea th:field="*{descricao}" rows="3" maxlength="200" required
+                            <textarea th:field="*{descricao}" rows="3" maxlength="200"
                                       class="form-control rounded-3"
                                       style="border:1px solid #121310; background:#fff;"
                                       placeholder="Descreva a ocorrência (máx. 200 caracteres)"></textarea>

@@ -2,25 +2,25 @@ package com.lorarch.challenge.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "MOTO", schema = "RM558024")
+@SequenceGenerator(
+        name = "seq_moto",
+        sequenceName = "SEQ_MOTO",
+        schema = "RM558024",
+        allocationSize = 1
+)
 public class Moto {
-    @SequenceGenerator(
-            name = "seq_moto",
-            sequenceName = "SEQ_MOTO",
-            schema = "RM558024",
-            allocationSize = 1
-    )
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_moto")
-    @Column(name = "ID")
+    @Column(name = "ID", nullable = false, updatable = false)
     private Long id;
 
     @NotBlank
@@ -29,31 +29,28 @@ public class Moto {
     private String placa;
 
     @NotBlank
-    @Size(max = 50)
-    @Column(name = "MODELO", nullable = false, length = 50)
+    @Size(max = 60)
+    @Column(name = "MODELO", nullable = false, length = 60)
     private String modelo;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS", nullable = false, length = 20)
     private StatusMoto status;
 
-    @NotBlank
-    @Size(max = 50)
-    @Column(name = "SETOR", nullable = false, length = 50)
+
+    @Size(max = 60)
+    @Column(name = "SETOR", length = 60)
     private String setor;
 
-    // TIMESTAMP no Oracle ↔ LocalDateTime no Java
     @CreationTimestamp
-    @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
+    @Column(name = "DATA_CADASTRO", updatable = false)
     private LocalDateTime dataCadastro;
 
     @UpdateTimestamp
-    @Column(name = "DATA_ATUALIZACAO", nullable = false)
+    @Column(name = "DATA_ATUALIZACAO")
     private LocalDateTime dataAtualizacao;
 
     // getters/setters
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
