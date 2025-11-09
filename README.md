@@ -1,142 +1,146 @@
-# LorArch – Aplicação Web & API REST com Spring Boot
+# 🏍️ LorArch – Aplicação Web & API REST com Spring Boot
 
-## Descrição do Projeto
+## 📘 Descrição do Projeto
+O **LorArch** é uma aplicação Web + API REST em **Spring Boot** para **gerenciar motos em um galpão**.
+Inclui autenticação (Spring Security), interface web com Thymeleaf, cache e persistência em Oracle.
 
-O **LorArch** é uma aplicação web em Spring Boot para gerenciar o fluxo operacional de motos em um galpão. O projeto oferece API REST e interface web (Thymeleaf), com autenticação via Spring Security e Oracle DB para desenvolvimento.
+---
 
-## Objetivos
+## 🎯 Objetivos
+* Registrar **entrada/saída/manutenção** de motos
+* Acompanhar **status da frota**
+* Lançar **ocorrências** (manutenção, uso, diagnóstico etc.)
+* Operar via **páginas web** e via **API REST**
+* **Gerar ocorrência automaticamente** ao enviar moto danificada/indisponível para manutenção
 
-- Registrar entrada/saída de motos
--  Acompanhar status (disponível, manutenção, danificada, etc.)
-- Lançar ocorrências (manutenção, diagnóstico, uso, etc.)
-- Disponibilizar API REST e páginas web para operação
+---
 
-## Arquitetura
-
-### Controllers
-- **REST**: `/api/**`
-- **Web (Thymeleaf)**: `/motos/**` e `/ocorrencias/**`
+## 🧱 Arquitetura
 
 ### Camadas
-- **Service**: regras de negócio e validações
-- **Repository**: persistência (Spring Data JPA)
-- **DTO**: objetos de entrada (API/Form)
-- **Model**: entidades JPA
-- **Config**: Configruações do projeto
-- **Excepition**: Trabalho das exceções
-- **Resources**: Parte WEB do projeto
+| Camada | Função |
+|---|---|
+| **Controller**| REST (`/api/**`) e Web/Thymeleaf (`/motos/**`, `/ocorrencias/**`) |
+| **Service** | Regras de negócio e validações |
+| **Repository**| Acesso a dados (Spring Data JPA) |
+| **DTO** | Objetos de transferência (formulários e API) |
+| **Model** | Entidades JPA |
+| **Config** | Segurança, beans e configurações globais |
+| **Exception** | Tratamento de exceções |
+| **Resources** | Templates HTML, assets, favicon |
 
-## Tecnologias
+---
 
-- Java 21
-- Spring Boot 3.2.x
-- Spring Web (REST + MVC)
-- Spring Data JPA
-- Spring Security
-- Spring Cache
-- Thymeleaf (views simples, sem layout/fragmentos globais)
-- Oracle Database
-- Bean Validation
-- Gradle
+## ⚙️ Tecnologias
+* **Java 21**
+* **Spring Boot 3.2.x**
+* **Spring Web (REST + MVC)**
+* **Spring Data JPA**
+* **Spring Security**
+* **Spring Cache**
+* **Thymeleaf** + **Bootstrap 5**
+* **Oracle Database**
+* **Bean Validation (Jakarta)**
+* **Gradle**
 
-## Banco de Dados (ORACLE)
+---
 
-- spring.datasource.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521/ORCL
-- spring.datasource.username=RM554611
-- spring.datasource.password=14102024
-- spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+## 🗄️ Banco de Dados (Oracle)
 
-> **Observação**: use a propriedade `spring.jpa.hibernate.ddl-auto` conforme sua necessidade (`update`, `create-drop`, etc.).
+properties
+spring.datasource.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521/ORCL
+spring.datasource.username=RM558024
+spring.datasource.password=270605
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.open-in-view=false
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.OracleDialect
+spring.jpa.properties.hibernate.default_schema=RM558024
 
 ## Como Executar
 
 ### Pré-requisitos
-
-- JDK 21+
-- Gradle (ou usar o wrapper)
+* JDK 21+
+* Gradle (ou use o wrapper)
 
 ### Passos
-git clone https://github.com/CauaMachad0/LorArch.git
+bash
+git clone [https://github.com/CauaMachad0/LorArch.git](https://github.com/CauaMachad0/LorArch.git)
 cd LorArch
-./gradlew bootRun   # Windows: gradlew.bat bootRun
+./gradlew bootRun    # Windows: gradlew.bat bootRun
 
-## Aplicação Web
-**URL:** `http://localhost:8081` *(ou `8080`, conforme configuração)*
+### Acesso
+* **Web:** `http://localhost:8081`
+* **API:** `http://localhost:8081/api/**`
 
----
-
-## Login
-
-- **Admin:** `admin / 1234` – acesso total (criar/editar/deletar)  
-
----
-
-## Interface Web (Thymeleaf)
-
-- `GET /login` – autenticação  
-- `GET /motos` – listagem  
-- `GET /ocorrencias` – listagem  
-- `GET /motos/novo`, `POST /motos` – criar  
-- `GET /motos/{id}/editar`, `POST /motos/{id}` – editar/atualizar  
-- `POST /motos/{id}/excluir` – excluir  
-- `GET /ocorrencias/novo`, `POST /ocorrencias` – criar  
-- `GET /ocorrencias/{id}/editar`, `POST /ocorrencias/{id}` – editar/atualizar  
-- `POST /ocorrencias/{id}/excluir` – excluir  
-
-### Fluxos extras (motos)
-
-- `POST /motos/{id}/manutencao` – envia para manutenção *(gera ocorrência + altera status)*  
-- `POST /motos/{id}/concluir-manutencao` – conclui manutenção e devolve ao uso
+### 🔐 Login
+| Usuário | Senha | Perfil |
+|---|---|---|
+| admin | 1234 | Admin (CRUD completo) |
 
 ---
 
-## Observações
+## 🧩 Interface Web (Thymeleaf)
 
-- **Views simplificadas:** sem `layout.html`/fragmentos globais para evitar erros de template.  
-- **Sem LazyInitialization nas listas:** repositório de Ocorrências usa `@EntityGraph` para carregar `moto` e `setor` na listagem, permitindo uso de `oc.moto.placa` e `oc.setor.nome` nas páginas.
+### Rotas principais
+| Rota | Descrição |
+|---|---|
+| `/` | Dashboard (Resumo da Frota) |
+| `/login` | Tela de autenticação |
+| `/register` | Registro de usuário |
+| `/motos` | Listagem/ações de motos |
+| `/ocorrencias` | Listagem/ações de ocorrências |
+
+### Fluxos extras de motos
+* `POST /motos/{id}/manutencao` → envia para manutenção (gera ocorrência automática)
+* `POST /motos/{id}/concluir-manutencao` → retorna moto ao status DISPONIVEL
 
 ---
 
-## API REST
+## 🧠 API REST
 
 ### Convenções
-- **Base path:** `/api/**`  
-- **Content-Type:** `application/json`  
-- **Validações:** Bean Validation → responde **400** em payload inválido
+* **Base:** `/api/**`
+* **Content-Type:** `application/json`
+* **Validações:** Bean Validation → `400` em payload inválido
+* **Erros comuns:** `404` (não encontrado), `422` (regra de negócio)
 
-### Motos
+### 🏍️ Motos (REST)
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `POST` | `/api/motos` | Cria moto |
+| `GET` | `/api/motos` | Lista motos |
+| `GET` | `/api/motos/{id}` | Busca por ID |
+| `PUT` | `/api/motos/{id}` | Atualiza |
+| `DELETE` | `/api/motos/{id}` | Remove (admin) |
 
-| Método | Endpoint            | Descrição                  |
-|:------:|---------------------|----------------------------|
-| POST   | `/api/motos`        | Cria uma nova moto         |
-| GET    | `/api/motos`        | Lista todas as motos       |
-| GET    | `/api/motos/{id}`   | Busca moto por ID          |
-| PUT    | `/api/motos/{id}`   | Atualiza dados da moto     |
-| DELETE | `/api/motos/{id}`   | **(ADMIN)** Remove a moto  |
-
-**Exemplo de JSON (MotoDTO)**
+> **Exemplo – MotoDTO**
 json
 {
   "placa": "ABC1D23",
   "modelo": "Honda Biz 125",
   "status": "DISPONIVEL",
-  "setor": "Galpao Central"
+  "setor": "Galpão Central"
 }
 
-## Ocorrências
+## ⚙️ Ocorrências (REST)
 
-| Método | Endpoint                  | Descrição                     |
-|:------:|---------------------------|-------------------------------|
-| POST   | `/api/ocorrencias`       | Cria uma ocorrência           |
-| GET    | `/api/ocorrencias`       | Lista todas as ocorrências    |
-| GET    | `/api/ocorrencias/{id}`  | Busca ocorrência por ID       |
-| PUT    | `/api/ocorrencias/{id}`  | Atualiza uma ocorrência       |
-| DELETE | `/api/ocorrencias/{id}`  | **(ADMIN)** Remove uma ocorrência |
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `POST` | `/api/ocorrencias` | Cria ocorrência |
+| `GET` | `/api/ocorrencias` | Lista ocorrências |
+| `GET` | `/api/ocorrencias/{id}` | Busca por ID |
+| `PUT` | `/api/ocorrencias/{id}` | Atualiza |
+| `DELETE` | `/api/ocorrencias/{id}` | Remove (admin) |
 
-**Exemplo de JSON (OcorrenciaDTO)**
+> **Exemplo – OcorrenciaDTO**
 json
 {
-  "tipo": "Manutencao",
+  "tipo": "MANUTENCAO",
   "descricao": "Troca de kit relação",
   "data": "2025-10-01",
   "custo": 120.50,
@@ -144,57 +148,68 @@ json
   "setorId": 2
 }
 
-## Validações (OcorrenciaDTO)
-
-- `tipo` (**obrigatório**) – valores aceitos: **Entrada**, **Saida**, **Manutencao**, **Diagnostico**
-- `descricao` – máximo **200** caracteres
-- `data` (**obrigatório**) – formato **YYYY-MM-DD**
-- `custo` (**obrigatório**) – **>= 0.00**
-- `motoId` (**obrigatório**)
-- `setorId` (**obrigatório**)
+> **Validações do DTO**
+* **tipo** (obrigatório) – `ENTRADA`, `SAIDA`, `MANUTENCAO`, `DIAGNOSTICO`
+* **descricao** – até 200 chars
+* **data** (obrigatório) – `YYYY-MM-DD`
+* **custo** – $\ge 0.00$
+* **motoId**, **setorId** – obrigatórios
 
 ---
 
-## Status da Moto (Enum)
+## 🏷️ Status da Moto (Enum)
 
-| Valor           | Significado            |
-|-----------------|------------------------|
-| `NOVA`          | Recém-cadastrada       |
-| `DISPONIVEL`    | Disponível para uso    |
-| `EM_USO`        | Em operação            |
-| `EM_MANUTENCAO` | Em manutenção/oficina  |
-| `DANIFICADA`    | Com dano pendente      |
-| `FALTANDO`      | Ausente/não localizada |
-
----
-
-## Cache
-
-- **Caches:** `motos` e `ocorrencias`
-- **Evicções automáticas:** criar/atualizar/excluir **invalidam** as listagens
+| Valor | Significado |
+|---|---|
+| `NOVA` | Recém-cadastrada |
+| `DISPONIVEL` | Disponível para uso |
+| `EM_USO` | Em operação |
+| `EM_MANUTENCAO` | Em manutenção/oficina |
+| `DANIFICADA` | Com dano pendente |
+| `INDISPONIVEL` | Fora de operação |
+| `FALTANDO` | Não localizada |
 
 ---
 
-## Notas de Implementação
-
-- **Thymeleaf (Web):** formulários com token **CSRF** quando habilitado  
-- **Ocorrências (Repository):** `@EntityGraph(attributePaths = {"moto","setor"})` nas consultas usadas nas views  
-- **Erros:** mensagens amigáveis na Web; **HTTP 400/404/422** na API conforme validações e recursos
+## ⚡ Cache
+* **Caches:** `motos`, `ocorrencias`
+* **Evicções automáticas:** criar/atualizar/excluir invalidam as listagens
 
 ---
 
-## Melhorias Futuras
+## 💅 UI/UX
+* **Paleta:** `#121310` (fundo) e `#f0f2f5` (conteúdo)
+* Layout responsivo (Bootstrap 5)
+* **Favicon:** `src/main/resources/static/assets/favicon-16.png`
 
-- Deploy em nuvem (AWS/Render/Railway)
-- Dashboard SPA (React/Angular)
-- Banco externo (PostgreSQL/MySQL)
+html
+<link rel="icon" type="image/png" sizes="16x16" th:href="@{/assets/favicon-16.png}" />
 
 ---
 
-## Autores
 
-- Feito com 💙 por **Cauã Marcelo Machado**  
-- Colaboradores: **Gabriel Lima** e **Marcos Ramalho**
+## 🛠️ Notas de Implementação
+* **Segurança:** Spring Security + BCrypt
+* **Login customizado:** `/login` → redireciona para `/`
+* **CSRF:** habilitado (forms Thymeleaf incluem token)
+* **Ocorrência automática:** ao enviar para manutenção via painel Web
+* **Tratamento global de erros:** `GlobalExceptionHandler`
 
+---
 
+## 🚧 Melhorias Futuras
+* Deploy (AWS/Render/Railway)
+* Dashboard SPA (React/Vue)
+* Integração IoT (LoRa/RFID)
+* Notificações em tempo real (WebSocket)
 
+---
+
+## 👨‍💻 Autores
+Feito com 💙 por **Cauã Marcelo Machado**
+Colaboradores: **Gabriel Lima** e **Marcos Ramalho**
+
+---
+
+## 🏁 Licença
+Uso acadêmico e educacional.
