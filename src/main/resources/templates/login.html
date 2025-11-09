@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <title>Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+    <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet"/>
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}" defer></script>
 </head>
-<body style="background:#f0f2f5;">
+<body style="background:#121310;">
 
 <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center"
-     style="background: linear-gradient(135deg, #121310 0%, #121310 40%, #5F9982 100%);">
-
-    <div class="card shadow-lg border-0 rounded-4" style="max-width: 420px; width: 100%; background-color: #f6f8ee;">
+     style="background: linear-gradient(135deg, #121310 0%, #121310 40%, #0e0f0d 100%);">
+    <div class="card shadow-lg border-0 rounded-4" style="max-width: 420px; width: 100%; background-color: #ffffff;">
         <div class="card-body p-4 p-sm-5">
 
             <div class="text-center mb-4">
                 <div class="fw-bold" style="font-size: 1.75rem; color: #121310;">Bem-vindo</div>
-                <div class="small" style="color:#5F9982;">Faça login para continuar</div>
+                <div class="small" style="color:rgba(18,19,16,.6);">Faça login para continuar</div>
             </div>
 
             <div th:if="${param.registered}" class="alert alert-success py-2 px-3 mb-3 rounded-3 small"
-                 role="alert" style="background-color:#e7f4ef; border:1px solid #c1e1d6; color:#1f5f1f;">
+                 role="alert" style="background-color:#e8f5e9; border:1px solid #b7e1be; color:#1e7e34;">
                 Conta criada com sucesso! Faça login para continuar.
             </div>
 
@@ -36,7 +36,7 @@
                     <label for="username" class="form-label fw-semibold" style="color:#121310;">Usuário</label>
                     <input id="username" type="text" name="username" required
                            class="form-control form-control-lg rounded-3"
-                           style="border: 1px solid #5F9982; background-color:#ffffff;"
+                           style="border: 1px solid rgba(18,19,16,.3); background-color:#ffffff;"
                            placeholder="seu usuário">
                 </div>
 
@@ -44,31 +44,29 @@
                     <label for="password" class="form-label fw-semibold" style="color:#121310;">Senha</label>
                     <input id="password" type="password" name="password" required
                            class="form-control form-control-lg rounded-3"
-                           style="border: 1px solid #5F9982; background-color:#ffffff;"
+                           style="border: 1px solid rgba(18,19,16,.3); background-color:#ffffff;"
                            placeholder="••••••••">
                 </div>
 
                 <button type="submit"
                         class="btn btn-lg w-100 rounded-3 fw-semibold"
-                        style="background-color:#5F9982; color:#ffffff; border:1px solid #4b7a68;">
+                        style="background-color:#121310; color:#ffffff; border:1px solid #121310;">
                     Login
                 </button>
 
                 <div class="text-center mt-3">
-                    <a th:href="@{/register}" class="text-decoration-none fw-semibold" style="color:#5F9982;">
+                    <a th:href="@{/register}" class="text-decoration-none fw-semibold" style="color:#121310;">
                         Criar conta
                     </a>
                 </div>
             </form>
 
             <div class="text-center mt-4">
-                <span class="small" style="color:#5F9982;">Protegido por segurança de sessão</span>
+                <span class="small" style="color:rgba(18,19,16,.4);">Protegido por segurança de sessão</span>
             </div>
 
         </div>
     </div>
 </div>
-
-<script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

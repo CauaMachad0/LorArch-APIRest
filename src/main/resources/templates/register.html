@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <title>Criar conta</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+    <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet"/>
 </head>
-<body>
+<body style="background:#121310;">
 
 <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center"
-     style="background: linear-gradient(135deg, #121310 0%, #121310 40%, #4e6a22 100%);">
+     style="background: linear-gradient(135deg, #121310 0%, #121310 40%, #0e0f0d 100%);">
 
-    <div class="card shadow-lg border-0 rounded-4" style="max-width: 520px; width: 100%; background-color: #f6f8ee;">
+    <div class="card shadow-lg border-0 rounded-4" style="max-width: 520px; width: 100%; background-color: #ffffff;">
         <div class="card-body p-4 p-sm-5">
 
             <div class="text-center mb-4">
                 <div class="fw-bold" style="font-size: 1.75rem; color: #121310;">Crie sua conta</div>
-                <div class="small" style="color:#5f7a2b;">Preencha para começar</div>
+                <div class="small" style="color:rgba(18,19,16,.6);">Preencha para começar</div>
             </div>
 
             <div th:if="${error}" class="alert alert-danger py-2 px-3 mb-4 rounded-3 small" role="alert"
@@ -30,7 +30,7 @@
                     <label class="form-label fw-semibold" style="color:#121310;">Nome completo</label>
                     <input type="text" th:field="*{fullName}" required
                            class="form-control form-control-lg rounded-3"
-                           style="border: 1px solid #d6e68a; background-color:#ffffff;"
+                           style="border: 1px solid rgba(18,19,16,.3); background-color:#ffffff;"
                            placeholder="Seu nome">
                 </div>
 
@@ -38,7 +38,7 @@
                     <label class="form-label fw-semibold" style="color:#121310;">E-mail</label>
                     <input type="email" th:field="*{email}" required
                            class="form-control form-control-lg rounded-3"
-                           style="border: 1px solid #d6e68a; background-color:#ffffff;"
+                           style="border: 1px solid rgba(18,19,16,.3); background-color:#ffffff;"
                            placeholder="voce@exemplo.com">
                 </div>
 
@@ -46,7 +46,7 @@
                     <label class="form-label fw-semibold" style="color:#121310;">Usuário</label>
                     <input type="text" th:field="*{username}" minlength="3" maxlength="50" required
                            class="form-control form-control-lg rounded-3"
-                           style="border: 1px solid #d6e68a; background-color:#ffffff;"
+                           style="border: 1px solid rgba(18,19,16,.3); background-color:#ffffff;"
                            placeholder="usuario">
                 </div>
 
@@ -54,17 +54,17 @@
                     <label class="form-label fw-semibold" style="color:#121310;">Senha</label>
                     <input type="password" th:field="*{password}" minlength="6" required
                            class="form-control form-control-lg rounded-3"
-                           style="border: 1px solid #d6e68a; background-color:#ffffff;"
+                           style="border: 1px solid rgba(18,19,16,.3); background-color:#ffffff;"
                            placeholder="••••••••">
                 </div>
 
                 <button type="submit" class="btn btn-lg w-100 rounded-3 fw-semibold"
-                        style="background-color:#4e6a22; color:#f6f8ee; border:1px solid #3f551b;">
+                        style="background-color:#121310; color:#ffffff; border:1px solid #121310;">
                     Cadastrar
                 </button>
 
                 <div class="text-center mt-3">
-                    <a th:href="@{/login}" class="text-decoration-none small" style="color:#5f7a2b;">Já tenho conta</a>
+                    <a th:href="@{/login}" class="text-decoration-none small" style="color:#121310;">Já tenho conta</a>
                 </div>
             </form>
 
@@ -72,6 +72,6 @@
     </div>
 </div>
 
-<script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>
