@@ -12,6 +12,7 @@ Inclui autenticação (Spring Security), interface web com Thymeleaf, cache e pe
 * Lançar **ocorrências** (manutenção, uso, diagnóstico etc.)
 * Operar via **páginas web** e via **API REST**
 * **Gerar ocorrência automaticamente** ao enviar moto danificada/indisponível para manutenção
+* Link do vídeo: <https://youtu.be/Gzqjd4NCRms>
 
 ---
 
